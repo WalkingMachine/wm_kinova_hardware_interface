@@ -52,20 +52,17 @@ MyRobot::MyRobot() {
 void MyRobot::Read() {
 
 
-    /*
+
     float PositionList[NOMBRE_DE_MOTEURS_KINOVA];
     float VelocityList[NOMBRE_DE_MOTEURS_KINOVA];
     MyGetActuatorsPosition(PositionList);
     MyGetActuatorsPosition(VelocityList);
-    */
+
     for (int i=0; i < NOMBRE_DE_MOTEURS_KINOVA; i++) {
         // << ----  U P D A T E   S T A T U S  ---- >>
-        pos[i] = 0.0F;
-        vel[i] = 0.0F;
+        pos[i] = PositionList[i];
+        vel[i] = VelocityList[i];
         eff[i] = 0.0F;
-        //   pos[i] = PositionList[i];
-     //   vel[i] = VelocityList[i];
-        // eff[i] = 0.0F;
     }
 
 }
@@ -75,15 +72,17 @@ void MyRobot::Read() {
 void MyRobot::Write() {
     //ROS_INFO("%d",cmd[0]);
     TrajectoryPoint pointToSend;
- //   if (cmd[0] != 0.0F ||  cmd[1] != 0.0F || cmd[2] != 0.0F || cmd[3] != 0.0F ||
- //       cmd[4] != 0.0F || cmd[5] != 0.0F || cmd[6] != 0.0F ) {
+    /*
         ROS_INFO("cool! %0.0f, %0.0f, %0.0f, %0.0f, %0.0f, %0.0f, %0.0f",
                  cmd[0], cmd[1], cmd[2], cmd[3], cmd[4], cmd[5], cmd[6]);
- //   }
+    */
     //  << ---- E X E C U T E   O R D E R S ---- >>
-    /*
 
-    TODO
+    pointToSend.Position.Actuators.Actuator1 = cmd[0];
+    pointToSend.Position.Actuators.Actuator2 = cmd[1];
+    pointToSend.Position.Actuators.Actuator3 = cmd[2];
+    pointToSend.Position.Actuators.Actuator4 = cmd[3];
+    pointToSend.Position.Actuators.Actuator5 = cmd[4];
     pointToSend.SynchroType = 0;
     pointToSend.LimitationsActive = 0;
     pointToSend.Limitations.speedParameter1 = 100;
@@ -91,7 +90,7 @@ void MyRobot::Write() {
     pointToSend.Limitations.speedParameter3 = 100;
     pointToSend.Position.Type = ANGULAR_VELOCITY;
     MySendAdvanceTrajectory(pointToSend);
-    */
+
 }
 
 
