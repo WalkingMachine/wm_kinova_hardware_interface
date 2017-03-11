@@ -5,42 +5,41 @@
 #include <hardware_interface/joint_command_interface.h>
 #include <controller_manager/controller_manager.h>
 #include <dlfcn.h>
+#include <boost/mpl/min_max.hpp>
 #include "std_msgs/String.h"
 #include "std_msgs/Int8MultiArray.h"
 #include "std_msgs/Int8.h"
 #include "std_msgs/Bool.h"
+#include <math.h>
 
-
-
-
-
-
+int tempo = 0;
 MyRobot::MyRobot() {
     // connect and register the joint state interface
     int i = 0;
-    std::string Name;
     ROS_INFO("\"< < <      E N R E G I S T R E M E N T   D E S   J O I N T S     > > >\"");
-    Name = "torso_arm_joint";
-    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle( Name, &pos[i], &vel[i], &eff[i++]));
-    joint_velocity_interface_.registerHandle(hardware_interface::JointHandle(joint_state_interface_.getHandle(Name), &cmd[i++]));
-    Name = "arm_shoulder_joint";
-    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle( Name, &pos[i], &vel[i], &eff[i++]));
-    joint_velocity_interface_.registerHandle(hardware_interface::JointHandle(joint_state_interface_.getHandle(Name), &cmd[i++]));
-    Name = "arm_rot_elbow_joint";
-    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle( Name, &pos[i], &vel[i], &eff[i++]));
-    joint_velocity_interface_.registerHandle(hardware_interface::JointHandle(joint_state_interface_.getHandle(Name), &cmd[i++]));
-    Name = "arm_elbow_joint";
-    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle( Name, &pos[i], &vel[i], &eff[i++]));
-    joint_velocity_interface_.registerHandle(hardware_interface::JointHandle(joint_state_interface_.getHandle(Name), &cmd[i++]));
-    Name = "arm_rot_wrist_joint";
-    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle( Name, &pos[i], &vel[i], &eff[i++]));
-    joint_velocity_interface_.registerHandle(hardware_interface::JointHandle(joint_state_interface_.getHandle(Name), &cmd[i++]));
-    Name = "arm_high_low_wrist_joint";
-    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle( Name, &pos[i], &vel[i], &eff[i++]));
-    joint_velocity_interface_.registerHandle(hardware_interface::JointHandle(joint_state_interface_.getHandle(Name), &cmd[i++]));
-    Name = "arm_low_wrist_grasp_socket_joint";
-    joint_state_interface_.registerHandle(hardware_interface::JointStateHandle( Name, &pos[i], &vel[i], &eff[i++]));
-    joint_velocity_interface_.registerHandle(hardware_interface::JointHandle(joint_state_interface_.getHandle(Name), &cmd[i++]));
+
+    const std::string Name[] = {
+            "torso_arm_joint"
+            , "arm_shoulder_joint"
+            , "arm_rot_elbow_joint"
+            , "arm_elbow_joint"
+            , "arm_rot_wrist_joint"
+            , "arm_high_low_wrist_joint"
+            , "arm_low_wrist_grasp_socket_joint"
+    };
+
+
+    for (i=0; i <= 6; i++) {
+        MaPos[i] = 0;
+        MaVel[i] = 0;
+        cmd[i] = 0;
+        pos[i] = 0;
+        vel[i] = 0;
+        eff[i] = 0;
+
+        joint_state_interface_.registerHandle(hardware_interface::JointStateHandle( Name[i], &pos[i], &vel[i], &eff[i]));
+        joint_velocity_interface_.registerHandle(hardware_interface::JointHandle(hardware_interface::JointStateHandle( Name[i], &pos[i], &vel[i], &eff[i]), &cmd[i]));
+    }
 
     registerInterface(&joint_state_interface_);
     registerInterface(&joint_velocity_interface_);
@@ -50,8 +49,25 @@ MyRobot::MyRobot() {
 
 
 void MyRobot::Read() {
+    for (int i=0; i <= 6; i++) {
+        MaPos[i] = MaPos[i]+MaVel[i];
+        if ( MaPos[i] < -180 ){
+            MaPos[i] += 360;
+        }
+        if ( MaPos[i] > 180 ){
+            MaPos[i] -= 360;
+        }
 
 
+        pos[i] = MaPos[i];
+        eff[i] = 0.0F;
+    }
+    if (tempo++ == 500) {
+        ROS_INFO("pos! %0.3f, %0.3f, %0.3f, %0.3f, %0.3f, %0.3f, %0.3f",
+                 pos[0], pos[1], pos[2], pos[3], pos[4], pos[5], pos[6]);
+        tempo = 0;
+    }
+/*
 
     float PositionList[NOMBRE_DE_MOTEURS_KINOVA];
     float VelocityList[NOMBRE_DE_MOTEURS_KINOVA];
@@ -64,20 +80,20 @@ void MyRobot::Read() {
         vel[i] = VelocityList[i];
         eff[i] = 0.0F;
     }
-
+*/
 }
 
 
 
 void MyRobot::Write() {
-    //ROS_INFO("%d",cmd[0]);
-    TrajectoryPoint pointToSend;
+
+    for (int i=0; i <= 6; i++) {
+        MaVel[i] = fmin( fmax( cmd[i], -100.0 ), 100.0 );
+    }
     /*
-        ROS_INFO("cool! %0.0f, %0.0f, %0.0f, %0.0f, %0.0f, %0.0f, %0.0f",
-                 cmd[0], cmd[1], cmd[2], cmd[3], cmd[4], cmd[5], cmd[6]);
-    */
     //  << ---- E X E C U T E   O R D E R S ---- >>
 
+    TrajectoryPoint pointToSend;
     pointToSend.Position.Actuators.Actuator1 = cmd[0];
     pointToSend.Position.Actuators.Actuator2 = cmd[1];
     pointToSend.Position.Actuators.Actuator3 = cmd[2];
@@ -90,7 +106,7 @@ void MyRobot::Write() {
     pointToSend.Limitations.speedParameter3 = 100;
     pointToSend.Position.Type = ANGULAR_VELOCITY;
     MySendAdvanceTrajectory(pointToSend);
-
+*/
 }
 
 
@@ -171,20 +187,20 @@ int main(int argc, char **argv) {
     ros::AsyncSpinner spinner(1);
     spinner.start();
 
-    ros::Duration period(0.02);
+    ros::Duration period(0.001);
 
     // Création de l'instance de Sara
     MyRobot Sara;
 
     controller_manager::ControllerManager cm(&Sara, n);
-
-
+    //ros::Time Temp = ros::Time::now();
     ROS_INFO("\"* * *      I N I T I A L I S A T I O N   T E R M I N E E         * * *\"");
     while (ros::ok())
     {
         Sara.Read();
         cm.update(ros::Time::now(), period);
         Sara.Write();
+        usleep(500);
     }
 
 }
