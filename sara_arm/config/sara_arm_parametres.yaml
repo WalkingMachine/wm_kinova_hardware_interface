@@ -1,10 +1,10 @@
-sara_arm_joint_publisher:
+sara_arm_joint_state_controller:
   type: "joint_state_controller/JointStateController"
-  publish_rate: 50
+  publish_rate: 200
 
-sara_arm_controller:
+sara_arm_trajectory_controller:
   type: "velocity_controllers/JointTrajectoryController"
-  publish_rate: 50               # default: 50
+  publish_rate: 200               # default: 50
   joints:
     - torso_arm_joint
     - arm_shoulder_joint
@@ -16,14 +16,14 @@ sara_arm_controller:
 
 
   gains: # Required because we're controlling a velocity interface
-    torso_arm_joint:                  {p: 100,  d: 1, i: 1, i_clamp: 1}
-    arm_shoulder_joint:               {p: 100,  d: 1, i: 1, i_clamp: 1}
-    arm_rot_elbow_joint:              {p: 100,  d: 1, i: 1, i_clamp: 1}
-    arm_elbow_joint:                  {p: 100,  d: 1, i: 1, i_clamp: 1}
-    arm_rot_wrist_joint:              {p: 100,  d: 1, i: 1, i_clamp: 1}
-    arm_high_low_wrist_joint:         {p: 100,  d: 1, i: 1, i_clamp: 1}
-    arm_low_wrist_grasp_socket_joint: {p: 100,  d: 1, i: 1, i_clamp: 1}
+    torso_arm_joint:                  {p: 0.0001,  d: 0.0001, i: 0.0000001, i_clamp: 1}
+    arm_shoulder_joint:               {p: 0.0001,  d: 0.0001, i: 0.0000001, i_clamp: 1}
+    arm_rot_elbow_joint:              {p: 0.0001,  d: 0.0001, i: 0.0000001, i_clamp: 1}
+    arm_elbow_joint:                  {p: 0.0001,  d: 0.0001, i: 0.0000001, i_clamp: 1}
+    arm_rot_wrist_joint:              {p: 0.0001,  d: 0.0001, i: 0.0000001, i_clamp: 1}
+    arm_high_low_wrist_joint:         {p: 0.0001,  d: 0.0001, i: 0.0000001, i_clamp: 1}
+    arm_low_wrist_grasp_socket_joint: {p: 0.0001,  d: 0.0001, i: 0.0000001, i_clamp: 1}
 
 
   # Velocity commands timeout [s], default 0.5
-  cmd_vel_timeout: 0.5
+  cmd_vel_timeout: 0.1
