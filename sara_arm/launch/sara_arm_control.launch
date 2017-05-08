@@ -2,13 +2,12 @@
 
 <launch>
 
-   <!-- load the controllers -->
-   <rosparam command="load" file="$(find sara_arm)/config/sara_arm_parametres.yaml"/>
-
+    <!-- load the controllers -->
+    <rosparam command="load" file="$(find sara_arm)/config/sara_arm_parametres.yaml"/>
 
     <!--   Start sara_arm hardware  -->
+
     <node pkg="sara_arm" type="sara_arm" name="sara_arm" output="screen">
-        <!-- remap from="/sara_arm_controller/cmd_vel" to="/cmd" / -->
     </node>
 
 

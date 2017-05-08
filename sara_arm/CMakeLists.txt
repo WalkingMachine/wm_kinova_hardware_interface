@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(sara_arm)
+SET(CMAKE_CXX_STANDARD 11)
+add_definitions(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -137,7 +139,7 @@ include_directories(
 add_executable(
     #old_sara_arm    src/sara_arm.cpp
     sara_arm    src/sara_arm_hardware_interface.cpp
-				)
+        src/kinova_hardware_interface.cpp src/Lib/kinova_hardware_interface.h)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
