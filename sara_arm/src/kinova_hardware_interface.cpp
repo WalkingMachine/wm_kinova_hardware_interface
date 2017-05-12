@@ -10,6 +10,7 @@
 const uint PERIOD = 5000;
 
 // << ---- S T A T I C   V A R I A B L E   D E C L A R A T I O N ---- >>
+bool kinova_hardware_interface::KinovaReady = false;
 bool kinova_hardware_interface::KinovaLoaded = false;
 double kinova_hardware_interface::LastSentTime = 0;
 double kinova_hardware_interface::LastGatherTime = 0;
@@ -45,6 +46,7 @@ kinova_hardware_interface::kinova_hardware_interface( std::string Name, uint Ind
     if ( !KinovaLoaded ){
         KinovaLoaded = true;
         KinovaLoaded = Init();
+        KinovaReady = true;
     }
     cmd = 0;
     pos = 0;
@@ -203,49 +205,55 @@ bool kinova_hardware_interface::Init(){
     return true;  // TODO  detect errors
 }
 bool kinova_hardware_interface::GatherInfo() {
-    if ( Simulation ) {
-        // TODO simulation
-    }else{
-        if (TempMonitorOn) {
-            SensorsInfo SI;
-            MyGetSensorsInfo(SI);
-            Temperature[0] = SI.ActuatorTemp1;
-            Temperature[1] = SI.ActuatorTemp2;
-            Temperature[2] = SI.ActuatorTemp3;
-            Temperature[3] = SI.ActuatorTemp4;
-            Temperature[4] = SI.ActuatorTemp5;
-            Temperature[5] = SI.ActuatorTemp6;
-            // TODO publish temperature in a topic
+
+    if ( KinovaReady ) {
+        if (Simulation) {
+            // TODO simulation
+        } else {
+            if (TempMonitorOn) {
+                SensorsInfo SI;
+                MyGetSensorsInfo(SI);
+                Temperature[0] = SI.ActuatorTemp1;
+                Temperature[1] = SI.ActuatorTemp2;
+                Temperature[2] = SI.ActuatorTemp3;
+                Temperature[3] = SI.ActuatorTemp4;
+                Temperature[4] = SI.ActuatorTemp5;
+                Temperature[5] = SI.ActuatorTemp6;
+                // TODO publish temperature in a topic
+            }
+            AngularPosition PositionList;
+            MyGetAngularCommand(PositionList);
+            Pos[0] = PositionList.Actuators.Actuator1 / 160 * 3.14159 + Offset[0];
+            Pos[1] = PositionList.Actuators.Actuator2 / 180 * 3.14159 + Offset[1];
+            Pos[2] = PositionList.Actuators.Actuator3 / 180 * 3.14159 + Offset[2];
+            Pos[3] = PositionList.Actuators.Actuator4 / 180 * 3.14159 + Offset[3];
+            Pos[4] = PositionList.Actuators.Actuator5 / 180 * 3.14159 + Offset[4];
+            Pos[5] = PositionList.Actuators.Actuator6 / 180 * 3.14159 + Offset[5];
         }
-        AngularPosition PositionList;
-        MyGetAngularCommand(PositionList);
-        Pos[0] = PositionList.Actuators.Actuator1 / 160 * 3.14159 + Offset[0];
-        Pos[1] = PositionList.Actuators.Actuator2 / 180 * 3.14159 + Offset[1];
-        Pos[2] = PositionList.Actuators.Actuator3 / 180 * 3.14159 + Offset[2];
-        Pos[3] = PositionList.Actuators.Actuator4 / 180 * 3.14159 + Offset[3];
-        Pos[4] = PositionList.Actuators.Actuator5 / 180 * 3.14159 + Offset[4];
-        Pos[5] = PositionList.Actuators.Actuator6 / 180 * 3.14159 + Offset[5];
     }
     return true;  // TODO  detect errors
 }
 bool kinova_hardware_interface::SendPoint() {
-    if ( Simulation ) {
-        // TODO simulation
-    }else {
-        //  execute order
-        pointToSend.Position.Actuators.Actuator1 = (float) Cmd[0];
-        pointToSend.Position.Actuators.Actuator2 = (float) Cmd[1];
-        pointToSend.Position.Actuators.Actuator3 = (float) Cmd[2];
-        pointToSend.Position.Actuators.Actuator4 = (float) Cmd[3];
-        pointToSend.Position.Actuators.Actuator5 = (float) Cmd[4];
-        pointToSend.Position.Actuators.Actuator6 = (float) Cmd[5];
+
+    if ( KinovaReady ) {
+        if (Simulation) {
+            // TODO simulation
+        } else {
+            //  execute order
+            pointToSend.Position.Actuators.Actuator1 = (float) Cmd[0];
+            pointToSend.Position.Actuators.Actuator2 = (float) Cmd[1];
+            pointToSend.Position.Actuators.Actuator3 = (float) Cmd[2];
+            pointToSend.Position.Actuators.Actuator4 = (float) Cmd[3];
+            pointToSend.Position.Actuators.Actuator5 = (float) Cmd[4];
+            pointToSend.Position.Actuators.Actuator6 = (float) Cmd[5];
 
 
-        MyEraseAllTrajectories();
-        //ROS_INFO( "Send!" );
-        //ROS_INFO("S1=%lf", Vel[0] );
-        //ROS_INFO("S2=%lf", pointToSend.Position.Actuators.Actuator1 );
-        MySendAdvanceTrajectory(pointToSend);
+            MyEraseAllTrajectories();
+            //ROS_INFO( "Send!" );
+            //ROS_INFO("S1=%lf", Vel[0] );
+            //ROS_INFO("S2=%lf", pointToSend.Position.Actuators.Actuator1 );
+            MySendAdvanceTrajectory(pointToSend);
+        }
     }
     return true;  // TODO  detect errors
 }
