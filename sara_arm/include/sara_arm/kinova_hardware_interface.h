@@ -51,6 +51,7 @@ private:
     static bool GatherInfo();
     static hardware_interface::VelocityJointInterface joint_velocity_interface_;
     static hardware_interface::JointStateInterface    joint_state_interface_;
+    static bool KinovaReady;
     static bool KinovaLoaded;
     static double LastSentTime;
     static double LastGatherTime;
