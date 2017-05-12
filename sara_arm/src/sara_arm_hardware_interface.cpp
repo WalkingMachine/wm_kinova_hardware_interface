@@ -1,7 +1,7 @@
 // Copyright[2017] <Walking Machine> [copyright]
 
 
-#include "Lib/sara_arm_hardware_interface.h"
+#include "../include/sara_arm/sara_arm_hardware_interface.h"
 #include <controller_manager/controller_manager.h>
 #include <dlfcn.h>
 #include "std_msgs/String.h"

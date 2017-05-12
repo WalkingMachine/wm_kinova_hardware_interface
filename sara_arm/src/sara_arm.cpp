@@ -7,7 +7,7 @@
 
 */
 
-#include "Lib/sara_arm.h"
+#include "../include/sara_arm/sara_arm.h"
 
 // Déclaration des variables utiles
 int result;  // Tampon de réception des résultats de certaines fonctions

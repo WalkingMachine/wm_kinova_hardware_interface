@@ -1,0 +1,9 @@
+<?xml version='1.0'?>
+
+<launch>
+
+    <!--   Start kinova hardware  -->
+    <node pkg="sara_arm" type="sara_arm" name="sara_arm" output="screen">
+    </node>
+
+</launch>

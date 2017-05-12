@@ -1,8 +1,8 @@
 #ifndef ARM_H_I
 #define ARM_H_I
 
-#include <Kinova.API.CommLayerUbuntu.h>
-#include <KinovaTypes.h>
+#include "Kinova.API.CommLayerUbuntu.h"
+#include "KinovaTypes.h"
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>

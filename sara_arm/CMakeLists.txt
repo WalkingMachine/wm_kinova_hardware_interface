@@ -7,16 +7,16 @@ add_definitions(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rospy
-  controller_manager
-  hardware_interface
+    roscpp
+    rospy
+    controller_manager
+    hardware_interface
 )
 
 ## System dependencies are found with CMake's conventions
  find_package(Boost REQUIRED COMPONENTS system)
  find_package(cmake_modules REQUIRED)
- #find_package(Eigen REQUIRED)
+# find_package(Eigen REQUIRED)
 
 
 
@@ -108,9 +108,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS src/Lib
-  CATKIN_DEPENDS roscpp rospy
-  DEPENDS Eigen
+    INCLUDE_DIRS include
+    CATKIN_DEPENDS roscpp rospy
+    #DEPENDS Eigen
 )
 
 ###########
@@ -119,10 +119,9 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories( src/Lib )
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  ${Eigen_INCLUDE_DIRS}
+ # ${Eigen_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -136,20 +135,27 @@ include_directories(
 # add_dependencies(wm_arm_driver ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(
-    #old_sara_arm    src/sara_arm.cpp
-    sara_arm    src/sara_arm_hardware_interface.cpp
-        src/kinova_hardware_interface.cpp src/Lib/kinova_hardware_interface.h)
+add_executable(sara_arm
+        include/sara_arm/Kinova.API.CommLayerUbuntu.h
+        include/sara_arm/Kinova.API.UsbCommandLayerUbuntu.h
+        include/sara_arm/kinova_hardware_interface.h
+        include/sara_arm/KinovaTypes.h
+        include/sara_arm/sara_arm.h
+        include/sara_arm/sara_arm_hardware_interface.h
+        src/kinova_hardware_interface.cpp
+        src/sara_arm_test.cpp )
+
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
- add_dependencies(sara_arm ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+ add_dependencies(sara_arm ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} )
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries( sara_arm
- ${catkin_LIBRARIES}
- dl
- ${Eigen_LIBRARIES}
+ target_link_libraries(
+    sara_arm
+    ${catkin_LIBRARIES}
+    dl
+    #${Eigen_LIBRARIES}
  )
 
 
