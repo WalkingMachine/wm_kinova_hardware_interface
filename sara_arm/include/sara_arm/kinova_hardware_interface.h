@@ -5,13 +5,13 @@
 #ifndef PROJECT_KINOVA_HARDWARE_INTERFACE_H
 #define PROJECT_KINOVA_HARDWARE_INTERFACE_H
 
-#include <Kinova.API.CommLayerUbuntu.h>
-#include <KinovaTypes.h>
+#include "Kinova.API.CommLayerUbuntu.h"
+#include "KinovaTypes.h"
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
 #include <string>
-//#include <ros>
+#include <ros/ros.h>
 
 
 class kinova_hardware_interface{
@@ -20,20 +20,31 @@ public:
     kinova_hardware_interface(std::string Name, uint Index);
     std::string Name;
     void Read();
+
+    double cmd;
+    double pos;
+    double vel;
+    double eff;
     void Write();
+    void ActivateTemperatureMonitoring( int argc, char **argv );
+    static double Cmd[6];
+    static double Pos[6];
+    static double Vel[6];
+    static double Eff[6];
+    static double Temperature[6];
+    static double Offset[6];
 
 private:
     // << ---- M E D I U M   L E V E L   I N T E R F A C E ---- >>
     uint Index;
+    ros::Publisher TemperaturePublisher;
+    static bool TempMonitorOn;
+    static bool JointTempMonitor[6];
     static double GetPos( uint Index );
-    static double SetVel( uint Index, double Vel );
-    static double Pos[8];
-    static double Vel[8];
-    static double Eff[8];
-    static double Cmd[8];
-    static double Offset[8];
-    static bool FreeIndex[8];
+    static bool SetVel( uint Index, double Vel );
+    static bool FreeIndex[6];
     static bool Init();
+    static bool Simulation;
 
     // << ---- L O W   L E V E L   I N T E R F A C E ---- >>
     static bool SendPoint();
@@ -56,10 +67,11 @@ private:
     static int (*MyInitFingers)();
     static int (*MyGetAngularCommand)(AngularPosition &);
     static int (*MyEraseAllTrajectories)();
-    //static int (*MyGetSensorsInfo)(SensorsInfo &);
+    static int (*MyGetSensorsInfo)(SensorsInfo &);
     //static int (*MySetActuatorMaxVelocity)(float &);
     //static int (*MyGetActuatorsPosition)(float &);
     //static int (*MyGetAngularVelocity)(float &);
+
 };
 
 
