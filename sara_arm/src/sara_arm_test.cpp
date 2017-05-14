@@ -11,7 +11,7 @@
 int main(int argc, char **argv) {
     // ROS
     // Initialisation
-    ROS_INFO("RUN! RUN! RUN!");
+    ROS_INFO("LOAD! LOAD! LOAD!");
 
 
     //kinova_hardware_interface KHI1( "torso_arm_joint", 0);
@@ -28,12 +28,12 @@ int main(int argc, char **argv) {
     //KHI5.ActivateTemperatureMonitoring( argc, argv );
 
 
+    ROS_INFO("run. run! RUN!");
     while(ros::ok()){
 
         KHI2.Read();
         KHI3.Read();
         KHI4.Read();
-        ROS_INFO("Run!");
 
         if ( (ros::Time::now().sec/2)%2 == 1 ){
             KHI2.cmd = 10;

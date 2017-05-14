@@ -5,7 +5,9 @@
 #include "../include/sara_arm/kinova_hardware_interface.h"
 #include <dlfcn.h>
 #include "diagnostic_msgs/DiagnosticStatus.h"
-#include <string>
+#include <joint_limits_interface/joint_limits.h>
+#include <joint_limits_interface/joint_limits_urdf.h>
+#include <joint_limits_interface/joint_limits_rosparam.h>
 
 const uint PERIOD = 5000;
 
@@ -68,9 +70,10 @@ void kinova_hardware_interface::Read(){
                 Temperature[Index] = ros::Time::now().nsec/1000000000.0;
             }
             diagnostic_msgs::DiagnosticStatus message;
-            message.name = "Temperature";
+            message.name = Name;
+            message.hardware_id = Name;
             diagnostic_msgs::KeyValue KV;
-            KV.key = 'T';
+            KV.key = "temperature";
             char chare[50];
             std::sprintf(chare, "%lf", Temperature[Index]);
             KV.value = chare;
@@ -87,9 +90,11 @@ void kinova_hardware_interface::ActivateTemperatureMonitoring( int argc, char **
         TempMonitorOn = true;
     }
     JointTempMonitor[Index] = true;
-    ros::init(argc, argv, Name.append("_status_publisher"));
+    std::string NodeName = Name;
+    NodeName.append( "_hardware_interface" );
+    ros::init(argc, argv, NodeName);
     ros::NodeHandle n;
-    TemperaturePublisher = n.advertise<diagnostic_msgs::DiagnosticStatus>(Name.append("_status"), 100);
+    TemperaturePublisher = n.advertise<diagnostic_msgs::DiagnosticStatus>( "diagnostic", 100);
     ros::spinOnce();
 }
 
@@ -184,20 +189,21 @@ bool kinova_hardware_interface::Init(){
         result = (*MyInitAPI)();
         MyGetDevices(devices, result);
         if (result != 1 ) {
-            if ( nb_attempts > 9 ){
+            if ( nb_attempts > 8 ){
+                ROS_INFO("\"* * *                   B R A S   I N T R O U V E                * * *\"");
                 ROS_INFO("\"* * *          M O D E   S I M U L A T I O N   A C T I V E       * * *\"");
                 Simulation = true;
                 Success = true;
             } else {
-                ROS_INFO("\"* * *           B R A S   I N T R O U V V A B L E                * * *\"");
-                ROS_INFO("\"* * *                 T E N T A T I V E   #%d                     * * *\"", nb_attempts );
+                ROS_INFO("\"* * *             B R A S   I N T R O U V A B L E                * * *\"");
+                ROS_INFO("\"* * *                 T E N T A T I V E   #%d/8                   * * *\"", nb_attempts );
                 nb_attempts++;
                 sleep(1);
             }
         } else {
             Success = true;
             ROS_INFO("\"* * *      I N I T I A L I S A T I O N   T E R M I N E E         * * *\"");
-            ROS_INFO("\"* * *                  B R A S   T R O U V E E                   * * *\"");
+            ROS_INFO("\"* * *                  B R A S   T R O U V E                     * * *\"");
         }
         //Success = true;
     }
