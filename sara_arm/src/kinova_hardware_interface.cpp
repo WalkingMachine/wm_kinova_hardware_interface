@@ -16,6 +16,8 @@ bool kinova_hardware_interface::KinovaReady = false;
 bool kinova_hardware_interface::KinovaLoaded = false;
 double kinova_hardware_interface::LastSentTime = 0;
 double kinova_hardware_interface::LastGatherTime = 0;
+double kinova_hardware_interface::Current = 0;
+double kinova_hardware_interface::Voltage = 0;
 bool kinova_hardware_interface::FreeIndex[6];
 double kinova_hardware_interface::Pos[6];
 double kinova_hardware_interface::Vel[6];
@@ -26,6 +28,7 @@ double kinova_hardware_interface::Temperature[6];
 hardware_interface::VelocityJointInterface kinova_hardware_interface::joint_velocity_interface_;
 hardware_interface::JointStateInterface    kinova_hardware_interface::joint_state_interface_;
 TrajectoryPoint kinova_hardware_interface::pointToSend;
+ros::Publisher kinova_hardware_interface::StatusPublisher;
 void * kinova_hardware_interface::commandLayer_handle;  //Handle for the library's command layer.
 KinovaDevice kinova_hardware_interface::devices[MAX_KINOVA_DEVICE];
 int (*kinova_hardware_interface::MyInitAPI)();
@@ -38,6 +41,7 @@ int (*kinova_hardware_interface::MyInitFingers)();
 int (*kinova_hardware_interface::MyGetAngularCommand)(AngularPosition &);
 int (*kinova_hardware_interface::MyEraseAllTrajectories)();
 bool kinova_hardware_interface::TempMonitorOn = false;
+bool kinova_hardware_interface::StatusMonitorOn = false;
 bool kinova_hardware_interface::JointTempMonitor[6];
 bool kinova_hardware_interface::Simulation = false;
 //template <diagnostic_msgs::DiagnosticStatus>;
@@ -210,6 +214,16 @@ bool kinova_hardware_interface::Init(){
 
     return true;  // TODO  detect errors
 }
+
+bool kinova_hardware_interface::StartStatusMonitoring( int argc, char **argv ){
+    StatusMonitorOn = true;
+    std::string NodeName = "kinova status";
+    ros::init(argc, argv, NodeName);
+    ros::NodeHandle n;
+    StatusPublisher = n.advertise<diagnostic_msgs::DiagnosticStatus>( "diagnostic", 100);
+    ros::spinOnce();
+}
+
 bool kinova_hardware_interface::GatherInfo() {
 
     if ( KinovaReady ) {
@@ -225,6 +239,8 @@ bool kinova_hardware_interface::GatherInfo() {
                 Temperature[3] = SI.ActuatorTemp4;
                 Temperature[4] = SI.ActuatorTemp5;
                 Temperature[5] = SI.ActuatorTemp6;
+                Current = SI.Current;
+                Voltage = SI.Voltage;
                 // TODO publish temperature in a topic
             }
             AngularPosition PositionList;
@@ -235,6 +251,24 @@ bool kinova_hardware_interface::GatherInfo() {
             Pos[3] = PositionList.Actuators.Actuator4 / 180 * 3.14159 + Offset[3];
             Pos[4] = PositionList.Actuators.Actuator5 / 180 * 3.14159 + Offset[4];
             Pos[5] = PositionList.Actuators.Actuator6 / 180 * 3.14159 + Offset[5];
+        }
+        if ( StatusMonitorOn ) {
+            diagnostic_msgs::DiagnosticStatus message;
+            message.name = "kinova_arm";
+            message.hardware_id = "kinova_arm";
+            diagnostic_msgs::KeyValue KV;
+            KV.key = "current";
+            char chare[50];
+            std::sprintf(chare, "%lf", Current);
+            KV.value = chare;
+            message.values = {KV};
+            StatusPublisher.publish(message);
+
+            KV.key = "voltage";
+            std::sprintf(chare, "%lf", Voltage);
+            KV.value = chare;
+            message.values = {KV};
+            StatusPublisher.publish(message);
         }
     }
     return true;  // TODO  detect errors

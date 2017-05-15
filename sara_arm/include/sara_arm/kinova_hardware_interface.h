@@ -20,12 +20,14 @@ public:
     kinova_hardware_interface(std::string Name, uint Index);
     std::string Name;
     void Read();
+    static bool StartStatusMonitoring( int argc, char **argv );
 
     double cmd;
     double pos;
     double vel;
     double eff;
     void Write();
+    bool PublishDiag( std::string Name, std::string key, double value );
     void ActivateTemperatureMonitoring( int argc, char **argv );
     static double Cmd[6];
     static double Pos[6];
@@ -38,8 +40,12 @@ private:
     // << ---- M E D I U M   L E V E L   I N T E R F A C E ---- >>
     uint Index;
     ros::Publisher TemperaturePublisher;
+    static ros::Publisher StatusPublisher;
+    static bool StatusMonitorOn;
     static bool TempMonitorOn;
     static bool JointTempMonitor[6];
+    static double Current;
+    static double Voltage;
     static double GetPos( uint Index );
     static bool SetVel( uint Index, double Vel );
     static bool FreeIndex[6];
@@ -58,7 +64,6 @@ private:
     static TrajectoryPoint pointToSend;
     static void * commandLayer_handle;  //Handle for the library's command layer.
     static KinovaDevice devices[MAX_KINOVA_DEVICE];
-
     // Function pointers to the functions we need
     static int (*MyInitAPI)();
     static int (*MyCloseAPI)();
