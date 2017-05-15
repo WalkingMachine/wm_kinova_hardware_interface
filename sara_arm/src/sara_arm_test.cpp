@@ -27,6 +27,7 @@ int main(int argc, char **argv) {
     KHI4.ActivateTemperatureMonitoring( argc, argv );
     //KHI5.ActivateTemperatureMonitoring( argc, argv );
 
+    kinova_hardware_interface::StartStatusMonitoring( argc, argv );
 
     ROS_INFO("run. run! RUN!");
     while(ros::ok()){
