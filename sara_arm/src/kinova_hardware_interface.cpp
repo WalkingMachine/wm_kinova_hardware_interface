@@ -11,7 +11,7 @@
 
 const uint PERIOD = 5000;
 
-// << ---- S T A T I C   V A R I A B L E   D E C L A R A T I O N ---- >>
+// << ---- S T A T I C   V A R I A B L E   I N I T I A L I Z A T I O N ---- >>
 bool kinova_hardware_interface::KinovaReady = false;
 bool kinova_hardware_interface::KinovaLoaded = false;
 double kinova_hardware_interface::LastSentTime = 0;
@@ -45,6 +45,7 @@ bool kinova_hardware_interface::StatusMonitorOn = false;
 bool kinova_hardware_interface::JointTempMonitor[6];
 bool kinova_hardware_interface::Simulation = false;
 //template <diagnostic_msgs::DiagnosticStatus>;
+
 
 // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
 kinova_hardware_interface::kinova_hardware_interface( std::string Name, uint Index ) {
@@ -89,7 +90,7 @@ void kinova_hardware_interface::Read(){
 void kinova_hardware_interface::Write(){
     SetVel( Index, cmd );
 }
-void kinova_hardware_interface::ActivateTemperatureMonitoring( int argc, char **argv ){
+void kinova_hardware_interface::StartTemperatureMonitoring(int argc, char **argv){
     if ( !TempMonitorOn ) {
         TempMonitorOn = true;
     }

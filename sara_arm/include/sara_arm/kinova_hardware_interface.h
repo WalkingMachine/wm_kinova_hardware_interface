@@ -17,18 +17,20 @@
 class kinova_hardware_interface{
 public:
     // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
+    // Functions
     kinova_hardware_interface(std::string Name, uint Index);
-    std::string Name;
     void Read();
     static bool StartStatusMonitoring( int argc, char **argv );
+    void Write();
+    bool PublishDiag( std::string Name, std::string key, double value );
+    void StartTemperatureMonitoring(int argc, char **argv);
 
+    // Variables
+    std::string Name;
     double cmd;
     double pos;
     double vel;
     double eff;
-    void Write();
-    bool PublishDiag( std::string Name, std::string key, double value );
-    void ActivateTemperatureMonitoring( int argc, char **argv );
     static double Cmd[6];
     static double Pos[6];
     static double Vel[6];
@@ -38,6 +40,12 @@ public:
 
 private:
     // << ---- M E D I U M   L E V E L   I N T E R F A C E ---- >>
+    // Functions
+    static double GetPos( uint Index );
+    static bool SetVel( uint Index, double Vel );
+    static bool Init();
+
+    // Variables
     uint Index;
     ros::Publisher TemperaturePublisher;
     static ros::Publisher StatusPublisher;
@@ -46,15 +54,15 @@ private:
     static bool JointTempMonitor[6];
     static double Current;
     static double Voltage;
-    static double GetPos( uint Index );
-    static bool SetVel( uint Index, double Vel );
     static bool FreeIndex[6];
-    static bool Init();
     static bool Simulation;
 
     // << ---- L O W   L E V E L   I N T E R F A C E ---- >>
+    // Functions
     static bool SendPoint();
     static bool GatherInfo();
+
+    // Variables
     static hardware_interface::VelocityJointInterface joint_velocity_interface_;
     static hardware_interface::JointStateInterface    joint_state_interface_;
     static bool KinovaReady;
@@ -64,7 +72,8 @@ private:
     static TrajectoryPoint pointToSend;
     static void * commandLayer_handle;  //Handle for the library's command layer.
     static KinovaDevice devices[MAX_KINOVA_DEVICE];
-    // Function pointers to the functions we need
+
+    // << ---- K I N O V A   D L ---- >>
     static int (*MyInitAPI)();
     static int (*MyCloseAPI)();
     static int (*MySendAdvanceTrajectory)(TrajectoryPoint command);
