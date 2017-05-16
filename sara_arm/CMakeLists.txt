@@ -140,10 +140,11 @@ add_executable(sara_arm
         include/sara_arm/Kinova.API.UsbCommandLayerUbuntu.h
         include/sara_arm/kinova_hardware_interface.h
         include/sara_arm/KinovaTypes.h
-        include/sara_arm/sara_arm.h
         include/sara_arm/sara_arm_hardware_interface.h
+        include/sara_arm/sara_arm_kinova_motors.h
         src/kinova_hardware_interface.cpp
-        src/sara_arm_test.cpp )
+        src/sara_arm_kinova_motors.cpp
+        src/sara_arm_test.cpp)
 
 
 ## Add cmake target dependencies of the executable
