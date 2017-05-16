@@ -12,11 +12,11 @@ int main(int argc, char **argv) {
     // Initialisation
     ROS_INFO("LOAD! LOAD! LOAD!");
 
-    torso_arm_joint KHI1 = torso_arm_joint();
-    arm_shoulder_joint KHI2 = arm_shoulder_joint();
-    arm_rot_elbow_joint KHI3 = arm_rot_elbow_joint();
-    arm_elbow_joint KHI4 = arm_elbow_joint();
-    arm_rot_wrist_joint KHI5 = arm_rot_wrist_joint();
+    auto KHI1 = torso_arm_joint();
+    //auto KHI2 = arm_shoulder_joint();
+    //auto KHI3 = arm_rot_elbow_joint();
+    //auto KHI4 = arm_elbow_joint();
+    //auto KHI5 = arm_rot_wrist_joint();
 
 
     KHI1.StartTemperatureMonitoring(argc, argv);

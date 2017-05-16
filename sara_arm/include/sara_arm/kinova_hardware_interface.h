@@ -19,11 +19,11 @@ public:
     // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
     // Functions
     kinova_hardware_interface(std::string Name, uint Index);
-    void Read();
-    static bool StartStatusMonitoring( int argc, char **argv );
-    void Write();
-    bool PublishDiag( std::string Name, std::string key, double value );
+    void init();
     void StartTemperatureMonitoring(int argc, char **argv);
+    static bool StartStatusMonitoring( int argc, char **argv );
+    void Read();
+    void Write();
 
     // Variables
     std::string Name;
@@ -43,7 +43,7 @@ private:
     // Functions
     static double GetPos( uint Index );
     static bool SetVel( uint Index, double Vel );
-    static bool Init();
+    static bool InitKinova();
 
     // Variables
     uint Index;

@@ -50,23 +50,25 @@ bool kinova_hardware_interface::Simulation = false;
 // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
 kinova_hardware_interface::kinova_hardware_interface( std::string Name, uint Index ) {
     this->Name = Name;
+    this->Index = Index;
+    init();
+}
+void kinova_hardware_interface::init( ){
     if ( !KinovaLoaded ){
         KinovaLoaded = true;
-        KinovaLoaded = Init();
+        KinovaLoaded = InitKinova();
         KinovaReady = true;
     }
     cmd = 0;
     pos = 0;
     vel = 0;
     eff = 0;
-    this->Index = Index;
     FreeIndex[Index] = false;
     hardware_interface::JointStateHandle handle( Name, &pos, &vel, &eff);
     joint_state_interface_.registerHandle(handle);
     joint_velocity_interface_.registerHandle(hardware_interface::JointHandle(handle, &cmd));
-
-    // Do other stuff TODO
 }
+
 void kinova_hardware_interface::Read(){
     pos = GetPos( Index );
     if ( TempMonitorOn ) {
@@ -133,7 +135,7 @@ bool kinova_hardware_interface::SetVel( uint Index, double cmd ){
 }
 
 // << ---- L O W   L E V E L   I N T E R F A C E ---- >>
-bool kinova_hardware_interface::Init(){
+bool kinova_hardware_interface::InitKinova(){
     for ( int i=0; i< 16; i++ ) {
         FreeIndex[i] = true;
     }
