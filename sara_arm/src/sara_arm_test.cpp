@@ -6,11 +6,13 @@
 
 #include "../include/sara_arm/sara_arm_kinova_motors.h"
 
-
 int main(int argc, char **argv) {
     // ROS
     // Initialisation
     ROS_INFO("LOAD! LOAD! LOAD!");
+
+    ros::init(argc, argv, "test_kinova_controller");
+    ros::NodeHandle nh;
 
     auto KHI1 = torso_arm_joint();
     //auto KHI2 = arm_shoulder_joint();
@@ -19,13 +21,18 @@ int main(int argc, char **argv) {
     //auto KHI5 = arm_rot_wrist_joint();
 
 
-    KHI1.StartTemperatureMonitoring(argc, argv);
-    //KHI2.StartTemperatureMonitoring( argc, argv );
-    //KHI3.StartTemperatureMonitoring( argc, argv );
-    //KHI4.StartTemperatureMonitoring( argc, argv );
-    //KHI5.StartTemperatureMonitoring( argc, argv );
+
+    KHI1.init( nh );
+    //KHI2.init( nh );
+    //KHI3.init( nh );
+    //KHI4.init( nh );
+    //KHI5.init( nh );
+
 
     kinova_hardware_interface::StartStatusMonitoring( argc, argv );
+
+    ros::spinOnce();
+
 
     ROS_INFO("run. run! RUN!");
     while(ros::ok()){

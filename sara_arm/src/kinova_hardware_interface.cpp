@@ -9,6 +9,12 @@
 #include <joint_limits_interface/joint_limits_urdf.h>
 #include <joint_limits_interface/joint_limits_rosparam.h>
 
+#include <joint_limits_interface/joint_limits.h>
+#include <joint_limits_interface/joint_limits_urdf.h>
+#include <joint_limits_interface/joint_limits_rosparam.h>
+
+
+
 const uint PERIOD = 5000;
 
 // << ---- S T A T I C   V A R I A B L E   I N I T I A L I Z A T I O N ---- >>
@@ -40,20 +46,15 @@ int (*kinova_hardware_interface::MyGetSensorsInfo)(SensorsInfo &);
 int (*kinova_hardware_interface::MyInitFingers)();
 int (*kinova_hardware_interface::MyGetAngularCommand)(AngularPosition &);
 int (*kinova_hardware_interface::MyEraseAllTrajectories)();
-bool kinova_hardware_interface::TempMonitorOn = false;
 bool kinova_hardware_interface::StatusMonitorOn = false;
-bool kinova_hardware_interface::JointTempMonitor[6];
 bool kinova_hardware_interface::Simulation = false;
-//template <diagnostic_msgs::DiagnosticStatus>;
-
 
 // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
 kinova_hardware_interface::kinova_hardware_interface( std::string Name, uint Index ) {
     this->Name = Name;
     this->Index = Index;
-    init();
 }
-void kinova_hardware_interface::init( ){
+void kinova_hardware_interface::init( ros::NodeHandle handle ){
     if ( !KinovaLoaded ){
         KinovaLoaded = true;
         KinovaLoaded = InitKinova();
@@ -64,45 +65,27 @@ void kinova_hardware_interface::init( ){
     vel = 0;
     eff = 0;
     FreeIndex[Index] = false;
-    hardware_interface::JointStateHandle handle( Name, &pos, &vel, &eff);
-    joint_state_interface_.registerHandle(handle);
-    joint_velocity_interface_.registerHandle(hardware_interface::JointHandle(handle, &cmd));
-}
+    hardware_interface::JointStateHandle HIhandle( Name, &pos, &vel, &eff);
+    joint_state_interface_.registerHandle(HIhandle);
+    joint_velocity_interface_.registerHandle(hardware_interface::JointHandle(HIhandle, &cmd));
 
+    TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticStatus>( "diagnostic", 100);
+}
 void kinova_hardware_interface::Read(){
     pos = GetPos( Index );
-    if ( TempMonitorOn ) {
-        if ( JointTempMonitor[Index] ) {
-            if ( Simulation ) {
-                Temperature[Index] = ros::Time::now().nsec/1000000000.0;
-            }
-            diagnostic_msgs::DiagnosticStatus message;
-            message.name = Name;
-            message.hardware_id = Name;
-            diagnostic_msgs::KeyValue KV;
-            KV.key = "temperature";
-            char chare[50];
-            std::sprintf(chare, "%lf", Temperature[Index]);
-            KV.value = chare;
-            message.values = {  KV  };
-            TemperaturePublisher.publish( message );
-        }
-    }
+    diagnostic_msgs::DiagnosticStatus message;
+    message.name = Name;
+    message.hardware_id = Name;
+    diagnostic_msgs::KeyValue KV;
+    KV.key = "temperature";
+    char chare[50];
+    std::sprintf(chare, "%lf", Temperature[Index]);
+    KV.value = chare;
+    message.values = {  KV  };
+    TemperaturePublisher.publish( message );
 }
 void kinova_hardware_interface::Write(){
     SetVel( Index, cmd );
-}
-void kinova_hardware_interface::StartTemperatureMonitoring(int argc, char **argv){
-    if ( !TempMonitorOn ) {
-        TempMonitorOn = true;
-    }
-    JointTempMonitor[Index] = true;
-    std::string NodeName = Name;
-    NodeName.append( "_hardware_interface" );
-    ros::init(argc, argv, NodeName);
-    ros::NodeHandle n;
-    TemperaturePublisher = n.advertise<diagnostic_msgs::DiagnosticStatus>( "diagnostic", 100);
-    ros::spinOnce();
 }
 
 // << ---- M E D I U M   L E V E L   I N T E R F A C E ---- >>
@@ -110,7 +93,6 @@ double kinova_hardware_interface::GetPos( uint Index ){
     double Now = ros::Time::now().toNSec();
     bool result;  // true = no error
     if ( LastGatherTime < Now-PERIOD  ){
-        //ROS_INFO("Read!");
         LastGatherTime = Now;
         result = GatherInfo();
         if ( !result ) {
@@ -124,7 +106,6 @@ bool kinova_hardware_interface::SetVel( uint Index, double cmd ){
     bool result = true;  // true = no error
     Cmd[Index] = cmd;
     if ( LastSentTime < Now-PERIOD  ){
-        //ROS_INFO("Send!");
         LastSentTime = Now;
         result = SendPoint( );
         if ( !result ) {
@@ -154,10 +135,9 @@ bool kinova_hardware_interface::InitKinova(){
     pointToSend.Limitations.speedParameter3 = 60;
     pointToSend.Position.Type = ANGULAR_VELOCITY;
 
-
     bool Success = false;
     while (!Success) {
-        // We load the library
+        // We load the kinova library
 
         ROS_INFO("\"* * *            C H A R G E M E N T   D E   L A   B D           * * *\"");
         commandLayer_handle = dlopen("Kinova.API.USBCommandLayerUbuntu.so", RTLD_NOW|RTLD_GLOBAL);
@@ -217,7 +197,6 @@ bool kinova_hardware_interface::InitKinova(){
 
     return true;  // TODO  detect errors
 }
-
 bool kinova_hardware_interface::StartStatusMonitoring( int argc, char **argv ){
     StatusMonitorOn = true;
     std::string NodeName = "kinova status";
@@ -226,26 +205,29 @@ bool kinova_hardware_interface::StartStatusMonitoring( int argc, char **argv ){
     StatusPublisher = n.advertise<diagnostic_msgs::DiagnosticStatus>( "diagnostic", 100);
     ros::spinOnce();
 }
-
 bool kinova_hardware_interface::GatherInfo() {
 
     if ( KinovaReady ) {
         if (Simulation) {
-            // TODO simulation
-        } else {
-            if (TempMonitorOn) {
-                SensorsInfo SI;
-                MyGetSensorsInfo(SI);
-                Temperature[0] = SI.ActuatorTemp1;
-                Temperature[1] = SI.ActuatorTemp2;
-                Temperature[2] = SI.ActuatorTemp3;
-                Temperature[3] = SI.ActuatorTemp4;
-                Temperature[4] = SI.ActuatorTemp5;
-                Temperature[5] = SI.ActuatorTemp6;
-                Current = SI.Current;
-                Voltage = SI.Voltage;
-                // TODO publish temperature in a topic
+            // Do crude simulation
+            for ( int i = 0; i<6; i++){
+                Temperature[i] = 0.1234;
+                Pos[i] = Pos[i];
             }
+            Current = 0;
+            Voltage = 0;
+        } else {
+            SensorsInfo SI;
+            MyGetSensorsInfo(SI);
+            Temperature[0] = SI.ActuatorTemp1;
+            Temperature[1] = SI.ActuatorTemp2;
+            Temperature[2] = SI.ActuatorTemp3;
+            Temperature[3] = SI.ActuatorTemp4;
+            Temperature[4] = SI.ActuatorTemp5;
+            Temperature[5] = SI.ActuatorTemp6;
+            Current = SI.Current;
+            Voltage = SI.Voltage;
+
             AngularPosition PositionList;
             MyGetAngularCommand(PositionList);
             Pos[0] = PositionList.Actuators.Actuator1 / 160 * 3.14159 + Offset[0];
@@ -280,7 +262,11 @@ bool kinova_hardware_interface::SendPoint() {
 
     if ( KinovaReady ) {
         if (Simulation) {
-            // TODO simulation
+            // Do crude simulation
+            for ( int i = 0; i<6; i++) {
+                Pos[i] += Cmd[i] / 100;
+                Temperature[i] = 0;
+            }
         } else {
             //  execute order
             pointToSend.Position.Actuators.Actuator1 = (float) Cmd[0];
@@ -300,5 +286,3 @@ bool kinova_hardware_interface::SendPoint() {
     }
     return true;  // TODO  detect errors
 }
-
-

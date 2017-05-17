@@ -13,14 +13,12 @@
 #include <string>
 #include <ros/ros.h>
 
-
 class kinova_hardware_interface{
 public:
     // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
     // Functions
     kinova_hardware_interface(std::string Name, uint Index);
-    void init();
-    void StartTemperatureMonitoring(int argc, char **argv);
+    void init( ros::NodeHandle );
     static bool StartStatusMonitoring( int argc, char **argv );
     void Read();
     void Write();
@@ -47,11 +45,10 @@ private:
 
     // Variables
     uint Index;
+    ros::NodeHandle nh;
     ros::Publisher TemperaturePublisher;
     static ros::Publisher StatusPublisher;
     static bool StatusMonitorOn;
-    static bool TempMonitorOn;
-    static bool JointTempMonitor[6];
     static double Current;
     static double Voltage;
     static bool FreeIndex[6];
@@ -88,6 +85,5 @@ private:
     //static int (*MyGetAngularVelocity)(float &);
 
 };
-
 
 #endif //PROJECT_KINOVA_HARDWARE_INTERFACE_H
