@@ -259,19 +259,19 @@ bool kinova_hardware_interface::GatherInfo() {
             diagnostic_msgs::DiagnosticStatus message;
             message.name = "kinova_arm";
             message.hardware_id = "kinova_arm";
-            diagnostic_msgs::KeyValue KV;
-            KV.key = "current";
+            diagnostic_msgs::KeyValue KV1;
+            KV1.key = "current";
             char chare[50];
             std::sprintf(chare, "%lf", Current);
-            KV.value = chare;
-            message.values = {KV};
+            KV1.value = chare;
+
+            diagnostic_msgs::KeyValue KV2;
+            KV2.key = "voltage";
+            std::sprintf(chare, "%lf", Voltage);
+            KV2.value = chare;
+            message.values = {KV1,KV2};
             StatusPublisher.publish(message);
 
-            KV.key = "voltage";
-            std::sprintf(chare, "%lf", Voltage);
-            KV.value = chare;
-            message.values = {KV};
-            StatusPublisher.publish(message);
         }
     }
     return true;  // TODO  detect errors
