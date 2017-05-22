@@ -69,7 +69,7 @@ void kinova_hardware_interface::init( ros::NodeHandle handle ){
     joint_state_interface_.registerHandle(HIhandle);
     joint_velocity_interface_.registerHandle(hardware_interface::JointHandle(HIhandle, &cmd));
 
-    TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticStatus>( "diagnostic", 100);
+    TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticStatus>( "diagnostics", 100);
 }
 void kinova_hardware_interface::Read(){
     pos = GetPos( Index );
