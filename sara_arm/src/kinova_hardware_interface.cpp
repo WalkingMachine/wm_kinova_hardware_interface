@@ -202,7 +202,7 @@ bool kinova_hardware_interface::StartStatusMonitoring( int argc, char **argv ){
     std::string NodeName = "kinova status";
     ros::init(argc, argv, NodeName);
     ros::NodeHandle n;
-    StatusPublisher = n.advertise<diagnostic_msgs::DiagnosticStatus>( "diagnostic", 100);
+    StatusPublisher = n.advertise<diagnostic_msgs::DiagnosticStatus>( "diagnostics", 100);
     ros::spinOnce();
 }
 bool kinova_hardware_interface::GatherInfo() {
