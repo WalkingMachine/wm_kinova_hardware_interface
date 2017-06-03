@@ -1,0 +1,15 @@
+<?xml version='1.0'?>
+
+<launch>
+    <node name="joy_node2" pkg="joy" type="joy_node">
+    <param name="autorepeat_rate" value="200" />
+    <param name="deadzone" value="0.20" />
+    <param name="dev" value="/dev/input/js0" />
+    <remap from="joy" to="joy2" />
+    </node>
+
+    <!--   Start kinova hardware  -->
+    <node pkg="sara_arm" type="sara_arm_teleop" name="sara_arm_teleop" output="screen">
+    </node>
+
+</launch>
