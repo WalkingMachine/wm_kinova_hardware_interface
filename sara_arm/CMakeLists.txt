@@ -135,30 +135,36 @@ include_directories(
 # add_dependencies(wm_arm_driver ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(sara_arm
-        include/sara_arm/Kinova.API.CommLayerUbuntu.h
-        include/sara_arm/Kinova.API.UsbCommandLayerUbuntu.h
-        include/sara_arm/kinova_hardware_interface.h
-        include/sara_arm/KinovaTypes.h
-        include/sara_arm/sara_arm_hardware_interface.h
-        include/sara_arm/sara_arm_kinova_motors.h
+#add_executable(sara_arm
+#        src/kinova_hardware_interface.cpp
+#        src/sara_arm_kinova_motors.cpp
+#        src/sara_arm_test.cpp)
+
+add_executable(sara_arm_teleop
         src/kinova_hardware_interface.cpp
         src/sara_arm_kinova_motors.cpp
-        src/sara_arm_test.cpp)
+        src/sara_simple_kinova_teleop.cpp)
 
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
- add_dependencies(sara_arm ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} )
+#add_dependencies(sara_arm ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} )
+add_dependencies(sara_arm_teleop ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} )
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(
-    sara_arm
-    ${catkin_LIBRARIES}
-    dl
-    #${Eigen_LIBRARIES}
- )
+# target_link_libraries(
+#    sara_arm
+#    ${catkin_LIBRARIES}
+#    dl
+#    #${Eigen_LIBRARIES}
+# )
 
+target_link_libraries(
+        sara_arm_teleop
+        ${catkin_LIBRARIES}
+        dl
+        #${Eigen_LIBRARIES}
+)
 
 #############
 ## Install ##
