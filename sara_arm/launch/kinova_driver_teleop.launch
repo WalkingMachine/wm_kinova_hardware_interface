@@ -6,6 +6,7 @@
     <param name="deadzone" value="0.20" />
     <param name="dev" value="/dev/input/js0" />
     <remap from="joy" to="joy2" />
+    <remap from="diagnostics" to="dompe" />
     </node>
 
     <!--   Start kinova hardware  -->
