@@ -83,6 +83,8 @@ private:
     //static int (*MySetActuatorMaxVelocity)(float &);
     //static int (*MyGetActuatorsPosition)(float &);
     //static int (*MyGetAngularVelocity)(float &);
+    //static int (*MyGetAngularTorqueCommand)(float[]  );
+    static int (*MyGetAngularForce)(AngularPosition &Response);
 
 };
 
