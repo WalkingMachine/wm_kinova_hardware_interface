@@ -45,6 +45,8 @@ int (*kinova_hardware_interface::MyMoveHome)();
 int (*kinova_hardware_interface::MyGetSensorsInfo)(SensorsInfo &);
 int (*kinova_hardware_interface::MyInitFingers)();
 int (*kinova_hardware_interface::MyGetAngularCommand)(AngularPosition &);
+int (*kinova_hardware_interface::MyGetAngularForce)(AngularPosition &Response);
+
 int (*kinova_hardware_interface::MyEraseAllTrajectories)();
 bool kinova_hardware_interface::StatusMonitorOn = false;
 bool kinova_hardware_interface::Simulation = false;
@@ -76,12 +78,20 @@ void kinova_hardware_interface::Read(){
     diagnostic_msgs::DiagnosticStatus message;
     message.name = Name;
     message.hardware_id = Name;
-    diagnostic_msgs::KeyValue KV;
-    KV.key = "temperature";
+
+
+    diagnostic_msgs::KeyValue KV1;
+    KV1.key = "temperature";
     char chare[50];
     std::sprintf(chare, "%lf", Temperature[Index]);
-    KV.value = chare;
-    message.values = {  KV  };
+    KV1.value = chare;
+
+    diagnostic_msgs::KeyValue KV2;
+    KV2.key = "torque";
+    std::sprintf(chare, "%lf", Eff[Index]);
+    KV2.value = chare;
+
+    message.values = {  KV1, KV2  };
     TemperaturePublisher.publish( message );
 }
 void kinova_hardware_interface::Write(){
@@ -152,9 +162,7 @@ bool kinova_hardware_interface::InitKinova(){
         MyGetDevices = (int (*)(KinovaDevice devices[MAX_KINOVA_DEVICE], int &result)) dlsym(commandLayer_handle, "GetDevices");
         MySendAdvanceTrajectory = (int (*)(TrajectoryPoint)) dlsym(commandLayer_handle, "SendAdvanceTrajectory");
         MyGetAngularCommand = (int (*)(AngularPosition &)) dlsym(commandLayer_handle, "GetAngularCommand");
-
-    //    MyGetActuatorsPosition = (int (*)(float &)) dlsym(commandLayer_handle, "GetActuatorsPosition");
-    //    MyGetAngularVelocity =   (int (*)(float &)) dlsym(commandLayer_handle, "GetAngularVelocity");
+        MyGetAngularForce = (int (*)(AngularPosition &))dlsym(commandLayer_handle, "GetAngularForce");
 
         // << ----   I N I T I A L I S A T I O N   ---- >>
         if ((MyInitAPI == NULL) || (MyCloseAPI == NULL) /*|| (MyGetActuatorsPosition == NULL) */ ||
@@ -192,7 +200,6 @@ bool kinova_hardware_interface::InitKinova(){
             ROS_INFO("\"* * *      I N I T I A L I S A T I O N   T E R M I N E E         * * *\"");
             ROS_INFO("\"* * *                  B R A S   T R O U V E                     * * *\"");
         }
-        //Success = true;
     }
 
     return true;  // TODO  detect errors
@@ -204,6 +211,7 @@ bool kinova_hardware_interface::StartStatusMonitoring( int argc, char **argv ){
     ros::NodeHandle n;
     StatusPublisher = n.advertise<diagnostic_msgs::DiagnosticStatus>( "diagnostics", 100);
     ros::spinOnce();
+    return true;
 }
 bool kinova_hardware_interface::GatherInfo() {
 
@@ -214,8 +222,8 @@ bool kinova_hardware_interface::GatherInfo() {
                 Temperature[i] = 0.1234;
                 Pos[i] = Pos[i];
             }
-            Current = 0;
-            Voltage = 0;
+            Current = -1;
+            Voltage = -1;
         } else {
             SensorsInfo SI;
             MyGetSensorsInfo(SI);
@@ -227,6 +235,15 @@ bool kinova_hardware_interface::GatherInfo() {
             Temperature[5] = SI.ActuatorTemp6;
             Current = SI.Current;
             Voltage = SI.Voltage;
+
+            AngularPosition ForceList;
+            MyGetAngularForce( ForceList );
+            Eff[0] = ForceList.Actuators.Actuator1;
+            Eff[1] = ForceList.Actuators.Actuator2;
+            Eff[2] = ForceList.Actuators.Actuator3;
+            Eff[3] = ForceList.Actuators.Actuator4;
+            Eff[4] = ForceList.Actuators.Actuator5;
+            Eff[5] = ForceList.Actuators.Actuator6;
 
             AngularPosition PositionList;
             MyGetAngularCommand(PositionList);
@@ -251,6 +268,7 @@ bool kinova_hardware_interface::GatherInfo() {
             KV2.key = "voltage";
             std::sprintf(chare, "%lf", Voltage);
             KV2.value = chare;
+
             message.values = {KV1,KV2};
             StatusPublisher.publish(message);
 
