@@ -42,7 +42,12 @@ ArmTeleop::ArmTeleop( ){
 
 void ArmTeleop::JoyCB(const sensor_msgs::Joy::ConstPtr& joy ){
 
-    KHI[0]->cmd = joy->axes[0]*-60;
+
+    for ( int i=0; i< 5; i++ ){
+        KHI[i]->Read();
+    }
+
+    KHI[0]->cmd = joy->axes[0]*-15;
     KHI[1]->cmd = joy->axes[1]*-30;
     KHI[2]->cmd = joy->axes[3]* 60;
     KHI[3]->cmd = joy->axes[4]*-60;
