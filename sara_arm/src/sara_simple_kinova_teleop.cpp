@@ -48,9 +48,10 @@ void ArmTeleop::JoyCB(const sensor_msgs::Joy::ConstPtr& joy ){
     }
 
     KHI[0]->cmd = joy->axes[0]*-15;
-    KHI[1]->cmd = joy->axes[1]*-30;
-    KHI[2]->cmd = joy->axes[3]* 60;
-    KHI[3]->cmd = joy->axes[4]*-60;
+    KHI[1]->cmd = joy->axes[1]*-25;
+    KHI[2]->cmd = joy->axes[3]* 30;
+    KHI[3]->cmd = joy->axes[4]*-30;
+    KHI[4]->cmd = ((joy->axes[2])-(joy->axes[5]))*30;
 
     for ( int i=0; i< 5; i++ ){
         KHI[i]->Write();
