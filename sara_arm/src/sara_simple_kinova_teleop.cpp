@@ -31,7 +31,7 @@ ArmTeleop::ArmTeleop( ){
     KHI[3] = new arm_elbow_joint();
     KHI[4] = new arm_rot_wrist_joint();
 
-    TeleopOn = false;
+    TeleopOn = true;//false;
 
     for ( int i=0; i< 5; i++ ){
         KHI[i]->init( nh );
