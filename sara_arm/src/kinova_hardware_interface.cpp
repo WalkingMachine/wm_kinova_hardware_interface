@@ -56,7 +56,7 @@ kinova_hardware_interface::kinova_hardware_interface( std::string Name, uint Ind
     this->Name = Name;
     this->Index = Index;
 }
-void kinova_hardware_interface::init( ros::NodeHandle handle ){
+bool kinova_hardware_interface::init( ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw_nh ){
     if ( !KinovaLoaded ){
         KinovaLoaded = true;
         KinovaLoaded = InitKinova();
@@ -72,8 +72,9 @@ void kinova_hardware_interface::init( ros::NodeHandle handle ){
     joint_velocity_interface_.registerHandle(hardware_interface::JointHandle(HIhandle, &cmd));
 
     TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticStatus>( "diagnostics", 100);
+    return true;
 }
-void kinova_hardware_interface::Read(){
+void kinova_hardware_interface::read(const ros::Time& time, const ros::Duration& period){
     pos = GetPos( Index );
     diagnostic_msgs::DiagnosticStatus message;
     message.name = Name;
@@ -94,7 +95,7 @@ void kinova_hardware_interface::Read(){
     message.values = {  KV1, KV2  };
     TemperaturePublisher.publish( message );
 }
-void kinova_hardware_interface::Write(){
+void kinova_hardware_interface::write(const ros::Time& time, const ros::Duration& period){
     SetVel( Index, cmd );
 }
 
