@@ -13,15 +13,15 @@
 #include <string>
 #include <ros/ros.h>
 
-class kinova_hardware_interface{
+class kinova_hardware_interface : public hardware_interface::RobotHW{
 public:
     // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
     // Functions
     kinova_hardware_interface(std::string Name, uint Index);
-    void init( ros::NodeHandle );
+    bool init( ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw_nh );
     static bool StartStatusMonitoring( int argc, char **argv );
-    void Read();
-    void Write();
+    void read(const ros::Time& time, const ros::Duration& period);
+    void write(const ros::Time& time, const ros::Duration& period);
 
     // Variables
     std::string Name;
