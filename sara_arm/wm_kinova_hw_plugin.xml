@@ -1,32 +1,8 @@
 <library path="lib/libwm_kinova_hw">
 
-    <class name="sara_arm/torso_arm_joint" type="sara_arm::torso_arm_joint" base_class_type="sara_arm/kinova_hardware_interface">
+    <class name="sara_arm/kinova_hardware_interface" type="kinova_hardware_interface" base_class_type="hardware_interface::RobotHW">
         <description>
-            Walking Machine torso_arm_joint hw.
-        </description>
-    </class>
-
-    <class name="sara_arm/arm_shoulder_joint" type="sara_arm::arm_shoulder_joint" base_class_type="sara_arm/kinova_hardware_interface">
-        <description>
-            Walking Machine arm_shoulder_joint hw.
-        </description>
-    </class>
-
-    <class name="sara_arm/arm_rot_elbow_joint" type="sara_arm::arm_rot_elbow_joint" base_class_type="sara_arm/kinova_hardware_interface">
-        <description>
-            Walking Machine arm_rot_elbow_joint hw.
-        </description>
-    </class>
-
-    <class name="sara_arm/arm_elbow_joint" type="sara_arm::arm_elbow_joint" base_class_type="sara_arm/kinova_hardware_interface">
-        <description>
-            Walking Machine arm_elbow_joint hw.
-        </description>
-    </class>
-
-    <class name="sara_arm/arm_rot_wrist_joint" type="sara_arm::arm_rot_wrist_joint" base_class_type="sara_arm/kinova_hardware_interface">
-        <description>
-            Walking Machine arm_rot_wrist_joint hw.
+            Walking Machine kinova hw.
         </description>
     </class>
 
