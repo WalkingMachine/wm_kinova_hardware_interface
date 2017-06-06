@@ -8,6 +8,7 @@
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/Joy.h>
 #include <std_msgs/Bool.h>
+#include <combined_robot_hw/combined_robot_hw.h>
 
 class ArmTeleop{
 public :
@@ -32,12 +33,12 @@ ArmTeleop::ArmTeleop( ){
     KHI[4] = new arm_rot_wrist_joint();
 
     TeleopOn = true;//false;
+    nh = ros::NodeHandle();
+
 
     for ( int i=0; i< 5; i++ ){
-        KHI[i]->init( nh );
+        KHI[i]->init( nh, nh );
     }
-
-    nh = ros::NodeHandle();
 
     // sub
     nh.subscribe( "joy2", 1 , &ArmTeleop::JoyCB, this );
@@ -50,7 +51,7 @@ void ArmTeleop::JoyCB(const sensor_msgs::Joy::ConstPtr& joy ){
 
     if (TeleopOn && !EStop ) {
         for ( int i=0; i< 5; i++ ){
-            KHI[i]->Read();
+            KHI[i]->read( ros::Time::now(), ros::Time::now()-ros::Time::now() );
         }
         KHI[0]->cmd = joy->axes[0]*-15;
         KHI[1]->cmd = joy->axes[1]*-25;
@@ -59,7 +60,7 @@ void ArmTeleop::JoyCB(const sensor_msgs::Joy::ConstPtr& joy ){
         KHI[4]->cmd = ((joy->axes[2]) - (joy->axes[5])) * -30;
 
         for ( int i=0; i< 5; i++ ){
-            KHI[i]->Write();
+            KHI[i]->write( ros::Time::now(), ros::Time::now()-ros::Time::now() );
         }
     } else if ( joy->axes[2]  <= -0.999 && joy->axes[5] <= -0.999 ){
         TeleopOn = true;
