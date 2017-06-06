@@ -305,3 +305,5 @@ bool kinova_hardware_interface::SendPoint() {
     }
     return true;  // TODO  detect errors
 }
+
+PLUGINLIB_EXPORT_CLASS( kinova_hardware_interface, hardware_interface::RobotHW)

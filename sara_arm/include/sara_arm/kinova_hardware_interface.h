@@ -12,6 +12,7 @@
 #include <hardware_interface/robot_hw.h>
 #include <string>
 #include <ros/ros.h>
+#include <pluginlib/class_list_macros.h>
 
 class kinova_hardware_interface : public hardware_interface::RobotHW{
 public:
