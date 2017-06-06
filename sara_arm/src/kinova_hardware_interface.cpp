@@ -8,7 +8,6 @@
 #include <joint_limits_interface/joint_limits.h>
 #include <joint_limits_interface/joint_limits_urdf.h>
 #include <joint_limits_interface/joint_limits_rosparam.h>
-
 #include <joint_limits_interface/joint_limits.h>
 #include <joint_limits_interface/joint_limits_urdf.h>
 #include <joint_limits_interface/joint_limits_rosparam.h>
@@ -52,9 +51,8 @@ bool kinova_hardware_interface::StatusMonitorOn = false;
 bool kinova_hardware_interface::Simulation = false;
 
 // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
-kinova_hardware_interface::kinova_hardware_interface( std::string Name, uint Index ) {
-    this->Name = Name;
-    this->Index = Index;
+kinova_hardware_interface::kinova_hardware_interface( ) {
+
 }
 bool kinova_hardware_interface::init( ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw_nh ){
     if ( !KinovaLoaded ){
@@ -62,6 +60,13 @@ bool kinova_hardware_interface::init( ros::NodeHandle& root_nh, ros::NodeHandle 
         KinovaLoaded = InitKinova();
         KinovaReady = true;
     }
+
+    std::string Name;
+    if (!robot_hw_nh.getParam("Name", Name)) {return false;}
+    std::string PIndex;
+    if (!robot_hw_nh.getParam("Index", PIndex)) {return false;}
+    Index = boost::lexical_cast<uint>(PIndex);
+
     cmd = 0;
     pos = 0;
     vel = 0;

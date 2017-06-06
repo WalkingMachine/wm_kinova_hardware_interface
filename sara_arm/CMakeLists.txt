@@ -140,16 +140,12 @@ include_directories(
 #        src/sara_arm_kinova_motors.cpp
 #        src/sara_arm_test.cpp)
 
-add_executable(sara_arm_teleop
-        src/kinova_hardware_interface.cpp
-        src/sara_arm_kinova_motors.cpp
-        src/sara_simple_kinova_teleop.cpp)
+
 
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 #add_dependencies(sara_arm ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} )
-add_dependencies(sara_arm_teleop ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} )
 
 ## Specify libraries to link a library or executable target against
 # target_link_libraries(
@@ -160,7 +156,6 @@ add_dependencies(sara_arm_teleop ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 # )
 
 target_link_libraries(
-        sara_arm_teleop
         ${catkin_LIBRARIES}
         dl
         #${Eigen_LIBRARIES}
