@@ -61,8 +61,9 @@ bool kinova_hardware_interface::init( ros::NodeHandle& root_nh, ros::NodeHandle 
         KinovaReady = true;
     }
 
-    std::string Name;
-    if (!robot_hw_nh.getParam("Name", Name)) {return false;}
+    std::vector<std::string> Joints;
+    if (!robot_hw_nh.getParam("joints", Joints)) {return false;}
+    Name = Joints[0];
     std::string PIndex;
     if (!robot_hw_nh.getParam("Index", PIndex)) {return false;}
     Index = boost::lexical_cast<uint>(PIndex);
