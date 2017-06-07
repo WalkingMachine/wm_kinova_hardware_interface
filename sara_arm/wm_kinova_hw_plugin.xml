@@ -1,6 +1,6 @@
 <library path="lib/libwm_kinova_hw">
 
-    <class name="sara_arm/kinova_hardware_interface" type="kinova_hardware_interface" base_class_type="hardware_interface::RobotHW">
+    <class name="sara_arm/WMKinovaHardwareInteface" type="WMKinovaHardwareInteface" base_class_type="hardware_interface::RobotHW">
         <description>
             Walking Machine kinova hw.
         </description>

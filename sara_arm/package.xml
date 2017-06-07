@@ -38,25 +38,20 @@
   <build_depend>roscpp</build_depend>
   <run_depend>roscpp</run_depend>
 
-  <build_depend>rospy</build_depend>
-  <run_depend>rospy</run_depend>
-
   <build_depend>kinova_driver</build_depend>
   <run_depend>kinova_driver</run_depend>
 
   <build_depend>hardware_interface</build_depend>
-  <build_depend>joint_trajectory_controller</build_depend>
-  <build_depend>controller_manager</build_depend>
-
   <run_depend>hardware_interface</run_depend>
-  <run_depend>controller_manager</run_depend>
-  <run_depend>joint_trajectory_controller</run_depend>
 
   <build_depend>diagnostic_msgs</build_depend>
   <run_depend>diagnostic_msgs</run_depend>
 
   <build_depend>joy</build_depend>
   <run_depend>joy</run_depend>
+
+  <build_depend>pluginlib</build_depend>
+  <run_depend>pluginlib</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
