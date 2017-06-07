@@ -2,8 +2,8 @@
 // Created by philippe on 03/05/17.
 //
 
-#ifndef PROJECT_KINOVA_HARDWARE_INTERFACE_H
-#define PROJECT_KINOVA_HARDWARE_INTERFACE_H
+#ifndef PROJECT_WMKinovaHardwareInteface_H
+#define PROJECT_WMKinovaHardwareInteface_H
 
 #include "Kinova.API.CommLayerUbuntu.h"
 #include "KinovaTypes.h"
@@ -14,11 +14,11 @@
 #include <ros/ros.h>
 #include <pluginlib/class_list_macros.h>
 
-class kinova_hardware_interface : public hardware_interface::RobotHW{
+class WMKinovaHardwareInteface : public hardware_interface::RobotHW{
 public:
     // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
     // Functions
-    kinova_hardware_interface();
+    WMKinovaHardwareInteface();
     bool init( ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw_nh );
     static bool StartStatusMonitoring( int argc, char **argv );
     void read(const ros::Time& time, const ros::Duration& period);
@@ -89,4 +89,4 @@ private:
 
 };
 
-#endif //PROJECT_KINOVA_HARDWARE_INTERFACE_H
+#endif //PROJECT_WMKinovaHardwareInteface_H

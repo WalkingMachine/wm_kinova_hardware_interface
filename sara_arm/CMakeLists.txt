@@ -109,7 +109,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
     INCLUDE_DIRS include
-    CATKIN_DEPENDS roscpp rospy
+    CATKIN_DEPENDS roscpp
     #DEPENDS Eigen
 )
 
@@ -136,7 +136,7 @@ include_directories(
 
 ## Declare a C++ executable
 #add_executable(sara_arm
-#        src/kinova_hardware_interface.cpp
+#        src/WMKinovaHardwareInteface.cpp
 #        src/sara_arm_kinova_motors.cpp
 #        src/sara_arm_test.cpp)
 
@@ -148,18 +148,13 @@ include_directories(
 #add_dependencies(sara_arm ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} )
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(
-#    sara_arm
-#    ${catkin_LIBRARIES}
-#    dl
-#    #${Eigen_LIBRARIES}
+ #target_link_libraries(
+ #   sara_arm
+ #   ${catkin_LIBRARIES}
+ #   dl
+    #${Eigen_LIBRARIES}
 # )
 
-target_link_libraries(
-        ${catkin_LIBRARIES}
-        dl
-        #${Eigen_LIBRARIES}
-)
 
 #############
 ## Install ##
