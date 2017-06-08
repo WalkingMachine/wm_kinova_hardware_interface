@@ -13,7 +13,6 @@
 #include <string>
 #include <ros/ros.h>
 #include <pluginlib/class_list_macros.h>
-
 class WMKinovaHardwareInteface : public hardware_interface::RobotHW{
 public:
     // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
