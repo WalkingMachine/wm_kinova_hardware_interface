@@ -2,7 +2,7 @@
 // Created by philippe on 03/05/17.
 //
 
-#include "../include/sara_arm/WMKinovaHardwareInteface.h"
+#include "WMKinovaHardwareInteface.h"
 #include <dlfcn.h>
 #include "diagnostic_msgs/DiagnosticStatus.h"
 #include <joint_limits_interface/joint_limits.h>
