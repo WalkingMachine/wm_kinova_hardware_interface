@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>sara_arm</name>
+  <name>wm_kinova_hardware_interface</name>
   <version>0.0.0</version>
   <description>The sara_arm package</description>
   <maintainer email="philippe.la-madeleine.1@ens.etsmtl.ca">PhilLM</maintainer>
@@ -23,15 +23,6 @@
 
   <!-- The *_depend tags are used to specify dependencies -->
   <!-- Dependencies can be catkin packages or system dependencies -->
-  <!-- Examples: -->
-  <!-- Use build_depend for packages you need at compile time: -->
-  <!--   <build_depend>message_generation</build_depend> -->
-  <!-- Use buildtool_depend for build tool packages: -->
-  <!--   <buildtool_depend>catkin</buildtool_depend> -->
-  <!-- Use run_depend for packages you need at runtime: -->
-  <!--   <run_depend>message_runtime</run_depend> -->
-  <!-- Use test_depend for packages you need only for testing: -->
-  <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>cmake_modules</build_depend>
 
@@ -65,6 +56,6 @@
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
-
+    <hardware_interface plugin="${prefix}/wm_kinova_hw_plugin.xml"/>
   </export>
 </package>
