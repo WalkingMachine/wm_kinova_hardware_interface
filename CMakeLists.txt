@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(sara_arm)
+project(wm_kinova_hardware_interface)
 SET(CMAKE_CXX_STANDARD 11)
 add_definitions(-std=c++11)
 

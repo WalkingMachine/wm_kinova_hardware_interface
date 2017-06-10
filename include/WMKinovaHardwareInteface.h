@@ -13,15 +13,17 @@
 #include <string>
 #include <ros/ros.h>
 #include <pluginlib/class_list_macros.h>
+
+
 class WMKinovaHardwareInteface : public hardware_interface::RobotHW{
 public:
     // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
     // Functions
     WMKinovaHardwareInteface();
-    bool init( ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw_nh );
+    virtual bool init( ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw_nh );
+    virtual void read(const ros::Time& time, const ros::Duration& period);
+    virtual void write(const ros::Time& time, const ros::Duration& period);
     static bool StartStatusMonitoring( int argc, char **argv );
-    void read(const ros::Time& time, const ros::Duration& period);
-    void write(const ros::Time& time, const ros::Duration& period);
 
     // Variables
     std::string Name;

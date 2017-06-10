@@ -53,6 +53,7 @@ bool WMKinovaHardwareInteface::Simulation = false;
 // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
 WMKinovaHardwareInteface::WMKinovaHardwareInteface( ) {
 
+    ROS_INFO("create Kinova");
 }
 bool WMKinovaHardwareInteface::init( ros::NodeHandle& root_nh, ros::NodeHandle &robot_hw_nh ){
     if ( !KinovaLoaded ){
@@ -61,21 +62,29 @@ bool WMKinovaHardwareInteface::init( ros::NodeHandle& root_nh, ros::NodeHandle &
         KinovaReady = true;
     }
 
+    using namespace hardware_interface;
+    Name = "";
+    Index = 0;
+    ROS_INFO("Init Kinova");
     std::vector<std::string> Joints;
-    if (!robot_hw_nh.getParam("joints", Joints)) {return false;}
+    if (!robot_hw_nh.getParam("joints", Joints)) {
+        ROS_ERROR("joit non trouvé dans les paramêtres");
+        return false;
+    }
     Name = Joints[0];
     std::string PIndex;
     if (!robot_hw_nh.getParam("Index", PIndex)) {return false;}
     Index = boost::lexical_cast<uint>(PIndex);
-
     cmd = 0;
     pos = 0;
     vel = 0;
     eff = 0;
     FreeIndex[Index] = false;
-    hardware_interface::JointStateHandle HIhandle( Name, &pos, &vel, &eff);
-    joint_state_interface_.registerHandle(HIhandle);
-    joint_velocity_interface_.registerHandle(hardware_interface::JointHandle(HIhandle, &cmd));
+
+    joint_state_interface_.registerHandle(JointStateHandle(Name, &pos, &vel, &eff));
+    joint_velocity_interface_.registerHandle(JointHandle(joint_state_interface_.getHandle(Name), &vel));
+    registerInterface(&joint_state_interface_);
+    registerInterface(&joint_velocity_interface_);
 
     TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticStatus>( "diagnostics", 100);
     return true;
