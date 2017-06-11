@@ -55,7 +55,11 @@ namespace wm_kinova_hardware_interface {
     }
 
     bool WMKinovaHardwareInteface::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_hw_nh) {
-
+        if (!KinovaLoaded) {
+            KinovaLoaded = true;
+            KinovaLoaded = InitKinova();
+            KinovaReady = true;
+        }
         using namespace hardware_interface;
         Name = "";
         Index = 0;
@@ -67,6 +71,9 @@ namespace wm_kinova_hardware_interface {
         if (!robot_hw_nh.getParam("index", Index)) {
             return false;
         }
+        if (!robot_hw_nh.getParam("offset", Offset[Index])) {
+            return false;
+        }
         cmd = 0;
         pos = 0;
         vel = 0;
@@ -74,7 +81,7 @@ namespace wm_kinova_hardware_interface {
         FreeIndex[Index] = false;
 
         joint_state_interface_.registerHandle(JointStateHandle(Name, &pos, &vel, &eff));
-        joint_velocity_interface_.registerHandle(JointHandle(joint_state_interface_.getHandle(Name), &vel));
+        joint_velocity_interface_.registerHandle(JointHandle(joint_state_interface_.getHandle(Name), &cmd));
         registerInterface(&joint_state_interface_);
         registerInterface(&joint_velocity_interface_);
 
@@ -83,11 +90,7 @@ namespace wm_kinova_hardware_interface {
     }
 
     void WMKinovaHardwareInteface::read(const ros::Time &time, const ros::Duration &period) {
-        if (!KinovaLoaded) {
-            KinovaLoaded = true;
-            KinovaLoaded = InitKinova();
-            KinovaReady = true;
-        }
+
 
         pos = GetPos(Index);
         diagnostic_msgs::DiagnosticStatus message;
@@ -111,11 +114,11 @@ namespace wm_kinova_hardware_interface {
     }
 
     void WMKinovaHardwareInteface::write(const ros::Time &time, const ros::Duration &period) {
-        SetVel(Index, cmd);
+        SetVel(Index, cmd*10); // from r/s to rmp = ~10
     }
 
 // << ---- M E D I U M   L E V E L   I N T E R F A C E ---- >>
-    double WMKinovaHardwareInteface::GetPos(uint Index) {
+    double WMKinovaHardwareInteface::GetPos(int Index) {
         double Now = ros::Time::now().toNSec();
         bool result;  // true = no error
         if (LastGatherTime < Now - PERIOD) {
@@ -128,7 +131,7 @@ namespace wm_kinova_hardware_interface {
         return Pos[Index];
     }
 
-    bool WMKinovaHardwareInteface::SetVel(uint Index, double cmd) {
+    bool WMKinovaHardwareInteface::SetVel(int Index, double cmd) {
         double Now = ros::Time::now().toNSec();
         bool result = true;  // true = no error
         Cmd[Index] = cmd;
@@ -220,7 +223,7 @@ namespace wm_kinova_hardware_interface {
                 ROS_INFO("\"* * *                  B R A S   T R O U V E                     * * *\"");
             }
         }
-
+        LastGatherTime = ros::Time::now().toNSec();
         return true;  // TODO  detect errors
     }
 
@@ -241,7 +244,7 @@ namespace wm_kinova_hardware_interface {
                 // Do crude simulation
                 for (int i = 0; i < 6; i++) {
                     Temperature[i] = 0.1234;
-                    Pos[i] = Pos[i];
+                    Pos[i] += Vel[i] / 5000;
                 }
                 Current = -1;
                 Voltage = -1;
@@ -268,12 +271,12 @@ namespace wm_kinova_hardware_interface {
 
                 AngularPosition PositionList;
                 MyGetAngularCommand(PositionList);
-                Pos[0] = PositionList.Actuators.Actuator1 / 160 * 3.14159 + Offset[0];
-                Pos[1] = PositionList.Actuators.Actuator2 / 180 * 3.14159 + Offset[1];
-                Pos[2] = PositionList.Actuators.Actuator3 / 180 * 3.14159 + Offset[2];
-                Pos[3] = PositionList.Actuators.Actuator4 / 180 * 3.14159 + Offset[3];
-                Pos[4] = PositionList.Actuators.Actuator5 / 180 * 3.14159 + Offset[4];
-                Pos[5] = PositionList.Actuators.Actuator6 / 180 * 3.14159 + Offset[5];
+                Pos[0] = PositionList.Actuators.Actuator1 / 160 * 3.14159 - Offset[0];
+                Pos[1] = PositionList.Actuators.Actuator2 / 180 * 3.14159 - Offset[1];
+                Pos[2] = PositionList.Actuators.Actuator3 / 180 * 3.14159 - Offset[2];
+                Pos[3] = PositionList.Actuators.Actuator4 / 180 * 3.14159 - Offset[3];
+                Pos[4] = PositionList.Actuators.Actuator5 / 180 * 3.14159 - Offset[4];
+                Pos[5] = PositionList.Actuators.Actuator6 / 180 * 3.14159 - Offset[5];
             }
             if (StatusMonitorOn) {
                 diagnostic_msgs::DiagnosticStatus message;
@@ -301,10 +304,12 @@ namespace wm_kinova_hardware_interface {
     bool WMKinovaHardwareInteface::SendPoint() {
 
         if (KinovaReady) {
+            for (int i = 0; i < 6; i++) {
+                Vel[i] = Cmd[i];
+            }
             if (Simulation) {
                 // Do crude simulation
                 for (int i = 0; i < 6; i++) {
-                    Pos[i] += Cmd[i] / 100;
                     Temperature[i] = 0;
                 }
             } else {
