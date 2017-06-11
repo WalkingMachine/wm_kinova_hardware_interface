@@ -52,7 +52,7 @@ namespace wm_kinova_hardware_interface
         static bool InitKinova();
 
         // Variables
-        uint Index;
+        int Index;
         ros::NodeHandle nh;
         ros::Publisher TemperaturePublisher;
         static ros::Publisher StatusPublisher;
