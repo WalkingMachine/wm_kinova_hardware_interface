@@ -47,8 +47,8 @@ namespace wm_kinova_hardware_interface
     private:
         // << ---- M E D I U M   L E V E L   I N T E R F A C E ---- >>
         // Functions
-        static double GetPos(uint Index);
-        static bool SetVel(uint Index, double Vel);
+        static double GetPos(int Index);
+        static bool SetVel(int Index, double Vel);
         static bool InitKinova();
 
         // Variables
