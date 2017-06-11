@@ -55,25 +55,18 @@ namespace wm_kinova_hardware_interface {
     }
 
     bool WMKinovaHardwareInteface::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_hw_nh) {
-        if (!KinovaLoaded) {
-            KinovaLoaded = true;
-            KinovaLoaded = InitKinova();
-            KinovaReady = true;
-        }
 
         using namespace hardware_interface;
         Name = "";
         Index = 0;
-        ROS_INFO("Init Kinova");
         std::vector<std::string> Joints;
         if (!robot_hw_nh.getParam("joints", Joints)) {
-            ROS_ERROR("joit non trouvé dans les paramêtres");
             return false;
         }
         Name = Joints[0];
-        std::string PIndex;
-        if (!robot_hw_nh.getParam("Index", PIndex)) { return false; }
-        Index = boost::lexical_cast<uint>(PIndex);
+        if (!robot_hw_nh.getParam("index", Index)) {
+            return false;
+        }
         cmd = 0;
         pos = 0;
         vel = 0;
@@ -90,6 +83,12 @@ namespace wm_kinova_hardware_interface {
     }
 
     void WMKinovaHardwareInteface::read(const ros::Time &time, const ros::Duration &period) {
+        if (!KinovaLoaded) {
+            KinovaLoaded = true;
+            KinovaLoaded = InitKinova();
+            KinovaReady = true;
+        }
+
         pos = GetPos(Index);
         diagnostic_msgs::DiagnosticStatus message;
         message.name = Name;
