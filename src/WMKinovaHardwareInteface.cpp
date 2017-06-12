@@ -5,12 +5,12 @@
 #include "WMKinovaHardwareInteface.h"
 #include <dlfcn.h>
 #include "diagnostic_msgs/DiagnosticStatus.h"
-#include <joint_limits_interface/joint_limits.h>
-#include <joint_limits_interface/joint_limits_urdf.h>
-#include <joint_limits_interface/joint_limits_rosparam.h>
-#include <joint_limits_interface/joint_limits.h>
-#include <joint_limits_interface/joint_limits_urdf.h>
-#include <joint_limits_interface/joint_limits_rosparam.h>
+//#include <joint_limits_interface/joint_limits.h>
+//#include <joint_limits_interface/joint_limits_urdf.h>
+//#include <joint_limits_interface/joint_limits_rosparam.h>
+//#include <joint_limits_interface/joint_limits.h>
+//#include <joint_limits_interface/joint_limits_urdf.h>
+//#include <joint_limits_interface/joint_limits_rosparam.h>
 
 
 namespace wm_kinova_hardware_interface {
@@ -205,7 +205,7 @@ namespace wm_kinova_hardware_interface {
             result = (*MyInitAPI)();
             MyGetDevices(devices, result);
             if (result != 1) {
-                if (nb_attempts > 8) {
+                if (nb_attempts > 4) {
                     ROS_INFO("\"* * *                   B R A S   I N T R O U V E                * * *\"");
                     ROS_INFO("\"* * *          M O D E   S I M U L A T I O N   A C T I V E       * * *\"");
                     Simulation = true;
@@ -244,7 +244,7 @@ namespace wm_kinova_hardware_interface {
                 // Do crude simulation
                 for (int i = 0; i < 6; i++) {
                     Temperature[i] = 0.1234;
-                    Pos[i] += Vel[i] / 5000;
+                    Pos[i] += Vel[i] / 50000;
                 }
                 Current = -1;
                 Voltage = -1;
