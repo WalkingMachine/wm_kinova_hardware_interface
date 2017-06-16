@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>wm_kinova_hardware_interface</name>
-  <version>0.0.0</version>
+  <version>1.0.0</version>
   <description>The sara_arm package</description>
   <maintainer email="philippe.la-madeleine.1@ens.etsmtl.ca">PhilLM</maintainer>
 
@@ -9,7 +9,7 @@
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>TODO</license>
+  <license>BSD</license>
 
 
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
