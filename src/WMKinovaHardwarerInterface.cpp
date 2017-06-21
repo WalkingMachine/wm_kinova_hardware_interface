@@ -2,8 +2,10 @@
 // Created by philippe on 03/05/17.
 //
 
-#include "WMKinovaHardwareInteface.h"
+#include "WMKinovaHardwareInterface.h"
 #include <dlfcn.h>
+#include <WMKinovaHardwareInterface.h>
+#include <hardware_interface/joint_command_interface.h>
 #include "diagnostic_msgs/DiagnosticStatus.h"
 //#include <joint_limits_interface/joint_limits.h>
 //#include <joint_limits_interface/joint_limits_urdf.h>
@@ -17,44 +19,42 @@ namespace wm_kinova_hardware_interface {
     const uint PERIOD = 6000000;
 
 // << ---- S T A T I C   V A R I A B L E   I N I T I A L I Z A T I O N ---- >>
-    bool WMKinovaHardwareInteface::KinovaReady = false;
-    bool WMKinovaHardwareInteface::KinovaLoaded = false;
-    double WMKinovaHardwareInteface::LastSentTime = 0;
-    double WMKinovaHardwareInteface::LastGatherTime = 0;
-    double WMKinovaHardwareInteface::Current = 0;
-    double WMKinovaHardwareInteface::Voltage = 0;
-    bool WMKinovaHardwareInteface::FreeIndex[6];
-    double WMKinovaHardwareInteface::Pos[6];
-    double WMKinovaHardwareInteface::Vel[6];
-    double WMKinovaHardwareInteface::Eff[6];
-    double WMKinovaHardwareInteface::Cmd[6];
-    double WMKinovaHardwareInteface::Offset[6];
-    double WMKinovaHardwareInteface::Temperature[6];
-    hardware_interface::VelocityJointInterface WMKinovaHardwareInteface::joint_velocity_interface_;
-    hardware_interface::JointStateInterface    WMKinovaHardwareInteface::joint_state_interface_;
-    TrajectoryPoint WMKinovaHardwareInteface::pointToSend;
-    ros::Publisher WMKinovaHardwareInteface::StatusPublisher;
-    void *WMKinovaHardwareInteface::commandLayer_handle;  //Handle for the library's command layer.
-    KinovaDevice WMKinovaHardwareInteface::devices[MAX_KINOVA_DEVICE];
+    bool WMKinovaHardwareInterface::KinovaReady = false;
+    bool WMKinovaHardwareInterface::KinovaLoaded = false;
+    double WMKinovaHardwareInterface::LastSentTime = 0;
+    double WMKinovaHardwareInterface::LastGatherTime = 0;
+    double WMKinovaHardwareInterface::Current = 0;
+    double WMKinovaHardwareInterface::Voltage = 0;
+    bool WMKinovaHardwareInterface::FreeIndex[6];
+    double WMKinovaHardwareInterface::Pos[6];
+    double WMKinovaHardwareInterface::Vel[6];
+    double WMKinovaHardwareInterface::Eff[6];
+    double WMKinovaHardwareInterface::Cmd[6];
+    double WMKinovaHardwareInterface::Offset[6];
+    double WMKinovaHardwareInterface::Temperature[6];
+    hardware_interface::VelocityJointInterface WMKinovaHardwareInterface::joint_velocity_interface_;
+    hardware_interface::JointStateInterface    WMKinovaHardwareInterface::joint_state_interface_;
+    TrajectoryPoint WMKinovaHardwareInterface::pointToSend;
+    ros::Publisher WMKinovaHardwareInterface::StatusPublisher;
+    void *WMKinovaHardwareInterface::commandLayer_handle;  //Handle for the library's command layer.
+    KinovaDevice WMKinovaHardwareInterface::devices[MAX_KINOVA_DEVICE];
 
-    int (*WMKinovaHardwareInteface::MyInitAPI)();
-    int (*WMKinovaHardwareInteface::MyCloseAPI)();
-    int (*WMKinovaHardwareInteface::MySendAdvanceTrajectory)(TrajectoryPoint command);
-    int (*WMKinovaHardwareInteface::MyGetDevices)(KinovaDevice devices[MAX_KINOVA_DEVICE], int &result);
-    int (*WMKinovaHardwareInteface::MyMoveHome)();
-    int (*WMKinovaHardwareInteface::MyGetSensorsInfo)(SensorsInfo &);
-    int (*WMKinovaHardwareInteface::MyInitFingers)();
-    int (*WMKinovaHardwareInteface::MyGetAngularCommand)(AngularPosition &);
-    int (*WMKinovaHardwareInteface::MyGetAngularForce)(AngularPosition &Response);
-    int (*WMKinovaHardwareInteface::MyEraseAllTrajectories)();
-    bool WMKinovaHardwareInteface::StatusMonitorOn = false;
-    bool WMKinovaHardwareInteface::Simulation = false;
+    int (*WMKinovaHardwareInterface::MyInitAPI)();
+    int (*WMKinovaHardwareInterface::MyCloseAPI)();
+    int (*WMKinovaHardwareInterface::MySendAdvanceTrajectory)(TrajectoryPoint command);
+    int (*WMKinovaHardwareInterface::MyGetDevices)(KinovaDevice devices[MAX_KINOVA_DEVICE], int &result);
+    int (*WMKinovaHardwareInterface::MyMoveHome)();
+    int (*WMKinovaHardwareInterface::MyGetSensorsInfo)(SensorsInfo &);
+    int (*WMKinovaHardwareInterface::MyInitFingers)();
+    int (*WMKinovaHardwareInterface::MyGetAngularCommand)(AngularPosition &);
+    int (*WMKinovaHardwareInterface::MyGetAngularForce)(AngularPosition &Response);
+    int (*WMKinovaHardwareInterface::MyEraseAllTrajectories)();
+    bool WMKinovaHardwareInterface::StatusMonitorOn = false;
+    bool WMKinovaHardwareInterface::Simulation = false;
 
 // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
-    WMKinovaHardwareInteface::WMKinovaHardwareInteface() {
-    }
 
-    bool WMKinovaHardwareInteface::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_hw_nh) {
+    bool WMKinovaHardwareInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_hw_nh) {
         if (!KinovaLoaded) {
             KinovaLoaded = true;
             KinovaLoaded = InitKinova();
@@ -89,7 +89,7 @@ namespace wm_kinova_hardware_interface {
         return true;
     }
 
-    void WMKinovaHardwareInteface::read(const ros::Time &time, const ros::Duration &period) {
+    void WMKinovaHardwareInterface::read(const ros::Time &time, const ros::Duration &period) {
 
 
         pos = GetPos(Index);
@@ -113,12 +113,12 @@ namespace wm_kinova_hardware_interface {
         TemperaturePublisher.publish(message);
     }
 
-    void WMKinovaHardwareInteface::write(const ros::Time &time, const ros::Duration &period) {
+    void WMKinovaHardwareInterface::write(const ros::Time &time, const ros::Duration &period) {
         SetVel(Index, cmd*10); // from r/s to rmp = ~10
     }
 
 // << ---- M E D I U M   L E V E L   I N T E R F A C E ---- >>
-    double WMKinovaHardwareInteface::GetPos(int Index) {
+    double WMKinovaHardwareInterface::GetPos(int Index) {
         double Now = ros::Time::now().toNSec();
         bool result;  // true = no error
         if (LastGatherTime < Now - PERIOD) {
@@ -131,7 +131,7 @@ namespace wm_kinova_hardware_interface {
         return Pos[Index];
     }
 
-    bool WMKinovaHardwareInteface::SetVel(int Index, double cmd) {
+    bool WMKinovaHardwareInterface::SetVel(int Index, double cmd) {
         double Now = ros::Time::now().toNSec();
         bool result = true;  // true = no error
         Cmd[Index] = cmd;
@@ -146,7 +146,7 @@ namespace wm_kinova_hardware_interface {
     }
 
 // << ---- L O W   L E V E L   I N T E R F A C E ---- >>
-    bool WMKinovaHardwareInteface::InitKinova() {
+    bool WMKinovaHardwareInterface::InitKinova() {
         for (int i = 0; i < 16; i++) {
             FreeIndex[i] = true;
         }
@@ -227,7 +227,7 @@ namespace wm_kinova_hardware_interface {
         return true;  // TODO  detect errors
     }
 
-    bool WMKinovaHardwareInteface::StartStatusMonitoring(int argc, char **argv) {
+    bool WMKinovaHardwareInterface::StartStatusMonitoring(int argc, char **argv) {
         StatusMonitorOn = true;
         std::string NodeName = "kinova status";
         ros::init(argc, argv, NodeName);
@@ -237,7 +237,7 @@ namespace wm_kinova_hardware_interface {
         return true;
     }
 
-    bool WMKinovaHardwareInteface::GatherInfo() {
+    bool WMKinovaHardwareInterface::GatherInfo() {
 
         if (KinovaReady) {
             if (Simulation) {
@@ -301,7 +301,7 @@ namespace wm_kinova_hardware_interface {
         return true;  // TODO  detect errors
     }
 
-    bool WMKinovaHardwareInteface::SendPoint() {
+    bool WMKinovaHardwareInterface::SendPoint() {
 
         if (KinovaReady) {
             for (int i = 0; i < 6; i++) {
@@ -332,4 +332,4 @@ namespace wm_kinova_hardware_interface {
         return true;  // TODO  detect errors
     }
 }
-PLUGINLIB_EXPORT_CLASS( wm_kinova_hardware_interface::WMKinovaHardwareInteface, hardware_interface::RobotHW)
+PLUGINLIB_EXPORT_CLASS( wm_kinova_hardware_interface::WMKinovaHardwareInterface, hardware_interface::RobotHW)
