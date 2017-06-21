@@ -38,9 +38,6 @@
   <build_depend>diagnostic_msgs</build_depend>
   <run_depend>diagnostic_msgs</run_depend>
 
-  <build_depend>joy</build_depend>
-  <run_depend>joy</run_depend>
-
   <build_depend>pluginlib</build_depend>
   <run_depend>pluginlib</run_depend>
 

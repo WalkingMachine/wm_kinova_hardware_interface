@@ -2,8 +2,8 @@
 // Created by philippe on 03/05/17.
 //
 
-#ifndef PROJECT_WMKinovaHardwareInteface_H
-#define PROJECT_WMKinovaHardwareInteface_H
+#ifndef PROJECT_WMKinovaHardwareInterface_H
+#define PROJECT_WMKinovaHardwareInterface_H
 
 #include "Kinova.API.CommLayerUbuntu.h"
 #include "KinovaTypes.h"
@@ -15,17 +15,13 @@
 #include <pluginlib/class_list_macros.h>
 
 
-
 namespace wm_kinova_hardware_interface
 {
 
-    class WMKinovaHardwareInteface : public hardware_interface::RobotHW {
+    class WMKinovaHardwareInterface : public hardware_interface::RobotHW {
     public:
         // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
         // Functions
-        WMKinovaHardwareInteface();
-        virtual ~WMKinovaHardwareInteface(){};
-
         virtual bool init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_hw_nh);
         virtual void read(const ros::Time &time, const ros::Duration &period);
         virtual void write(const ros::Time &time, const ros::Duration &period);
@@ -96,4 +92,4 @@ namespace wm_kinova_hardware_interface
 
     };
 }
-#endif //PROJECT_WMKinovaHardwareInteface_H
+#endif //PROJECT_WMKinovaHardwareInterface_H
