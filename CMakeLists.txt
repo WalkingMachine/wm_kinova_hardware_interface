@@ -38,7 +38,7 @@ include_directories(
 
 
 add_library(${PROJECT_NAME}
-        src/WMKinovaHardwarerInterface.cpp
+        src/WMKinovaHardwareInterface.cpp
         )
 
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
