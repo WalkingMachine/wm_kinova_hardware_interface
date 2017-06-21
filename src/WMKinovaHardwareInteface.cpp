@@ -14,7 +14,7 @@
 
 
 namespace wm_kinova_hardware_interface {
-    const uint PERIOD = 5000;
+    const uint PERIOD = 6000000;
 
 // << ---- S T A T I C   V A R I A B L E   I N I T I A L I Z A T I O N ---- >>
     bool WMKinovaHardwareInteface::KinovaReady = false;
