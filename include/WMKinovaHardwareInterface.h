@@ -12,6 +12,10 @@
 #include <hardware_interface/robot_hw.h>
 #include <string>
 #include <ros/ros.h>
+#include <dlfcn.h>
+#include <WMKinovaHardwareInterface.h>
+#include <hardware_interface/joint_command_interface.h>
+#include "diagnostic_msgs/DiagnosticStatus.h"
 #include <pluginlib/class_list_macros.h>
 
 
