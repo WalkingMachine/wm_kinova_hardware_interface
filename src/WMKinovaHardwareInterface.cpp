@@ -3,16 +3,6 @@
 //
 
 #include "WMKinovaHardwareInterface.h"
-#include <dlfcn.h>
-#include <WMKinovaHardwareInterface.h>
-#include <hardware_interface/joint_command_interface.h>
-#include "diagnostic_msgs/DiagnosticStatus.h"
-//#include <joint_limits_interface/joint_limits.h>
-//#include <joint_limits_interface/joint_limits_urdf.h>
-//#include <joint_limits_interface/joint_limits_rosparam.h>
-//#include <joint_limits_interface/joint_limits.h>
-//#include <joint_limits_interface/joint_limits_urdf.h>
-//#include <joint_limits_interface/joint_limits_rosparam.h>
 
 
 namespace wm_kinova_hardware_interface {

@@ -46,7 +46,7 @@ target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 
 # Install
-install(DIRECTORY include/${PROJECT_NAME}/
+install(DIRECTORY include
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(TARGETS ${PROJECT_NAME}
