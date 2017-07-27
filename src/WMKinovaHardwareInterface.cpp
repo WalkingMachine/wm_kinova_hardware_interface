@@ -3,6 +3,7 @@
 //
 
 #include "WMKinovaHardwareInterface.h"
+#include <std_msgs/Float32.h>
 
 
 namespace wm_kinova_hardware_interface {
@@ -26,6 +27,7 @@ namespace wm_kinova_hardware_interface {
     hardware_interface::JointStateInterface    WMKinovaHardwareInterface::joint_state_interface_;
     TrajectoryPoint WMKinovaHardwareInterface::pointToSend;
     ros::Publisher WMKinovaHardwareInterface::StatusPublisher;
+    ros::Publisher elbow_torque_publisher;
     void *WMKinovaHardwareInterface::commandLayer_handle;  //Handle for the library's command layer.
     KinovaDevice WMKinovaHardwareInterface::devices[MAX_KINOVA_DEVICE];
 
@@ -76,6 +78,10 @@ namespace wm_kinova_hardware_interface {
         registerInterface(&joint_velocity_interface_);
 
         TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticStatus>("diagnostics", 100);
+        if (Name == "right_elbow_pitch_joint") {
+          elbow_torque_publisher = nh.advertise<std_msgs::Float32>("elbow_torque", 100);
+        }
+
         return true;
     }
 
@@ -101,6 +107,11 @@ namespace wm_kinova_hardware_interface {
 
         message.values = {KV1, KV2};
         TemperaturePublisher.publish(message);
+        if (Name == "right_elbow_pitch_joint") {
+          std_msgs::Float32  msg;
+          msg.data = Eff[Index];
+          elbow_torque_publisher.publish(msg);
+        }
     }
 
     void WMKinovaHardwareInterface::write(const ros::Time &time, const ros::Duration &period) {
