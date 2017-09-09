@@ -272,12 +272,12 @@ namespace wm_kinova_hardware_interface {
 
                 AngularPosition PositionList;
                 MyGetAngularCommand(PositionList);
-                Pos[0] = PositionList.Actuators.Actuator1 / 160 * PI - Offset[0];
-                Pos[1] = PositionList.Actuators.Actuator2 / 180 * PI - Offset[1];
-                Pos[2] = PositionList.Actuators.Actuator3 / 180 * PI - Offset[2];
-                Pos[3] = PositionList.Actuators.Actuator4 / 180 * PI - Offset[3];
-                Pos[4] = PositionList.Actuators.Actuator5 / 180 * PI - Offset[4];
-                Pos[5] = PositionList.Actuators.Actuator6 / 180 * PI - Offset[5];
+                Pos[0] = PositionList.Actuators.Actuator1 / 160 * M_PI - Offset[0];
+                Pos[1] = PositionList.Actuators.Actuator2 / 180 * M_PI - Offset[1];
+                Pos[2] = PositionList.Actuators.Actuator3 / 180 * M_PI - Offset[2];
+                Pos[3] = PositionList.Actuators.Actuator4 / 180 * M_PI - Offset[3];
+                Pos[4] = PositionList.Actuators.Actuator5 / 180 * M_PI - Offset[4];
+                Pos[5] = PositionList.Actuators.Actuator6 / 180 * M_PI - Offset[5];
             }
             if (StatusMonitorOn) {
                 diagnostic_msgs::DiagnosticStatus message;
