@@ -18,6 +18,7 @@
 #include "diagnostic_msgs/DiagnosticStatus.h"
 #include <pluginlib/class_list_macros.h>
 
+#define PI 3.141592654
 
 namespace wm_kinova_hardware_interface
 {
@@ -95,5 +96,12 @@ namespace wm_kinova_hardware_interface
         static int (*MyGetAngularForce)(AngularPosition &Response);
 
     };
+
+    double AngleProxy( double A1 = 0, double A2 = 0 ) {  // Give the smallest difference between two angles in rad
+            A1 = A2-A1;
+            A1 = (int)( A1+PI)%(int)(2*PI) -PI;
+            return A1;
+    }
+
 }
 #endif //PROJECT_WMKinovaHardwareInterface_H
