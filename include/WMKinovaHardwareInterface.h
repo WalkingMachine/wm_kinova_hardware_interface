@@ -17,6 +17,7 @@
 #include <hardware_interface/joint_command_interface.h>
 #include "diagnostic_msgs/DiagnosticStatus.h"
 #include <pluginlib/class_list_macros.h>
+#include <math.h>
 
 #define PI 3.141592654
 
@@ -98,12 +99,12 @@ namespace wm_kinova_hardware_interface
     };
 
     double Mod( double A, double N ) {
-        return A-(int)(A/N)*N;
+        return A-floor(A/N)*N;
     }
     double AngleProxy( double A1 = 0, double A2 = 0 ) {  // Give the smallest difference between two angles in rad
-            A1 = A2-A1;
-            A1 = Mod( A1+PI, 2*PI )-PI;
-            return A1;
+        A1 = A2-A1;
+        A1 = Mod( A1+PI, 2*PI )-PI;
+        return A1;
     }
 }
 #endif //PROJECT_WMKinovaHardwareInterface_H
