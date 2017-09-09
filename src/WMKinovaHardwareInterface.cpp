@@ -88,7 +88,7 @@ namespace wm_kinova_hardware_interface {
     void WMKinovaHardwareInterface::read(const ros::Time &time, const ros::Duration &period) {
 
 
-        pos = GetPos(Index);
+        pos = AngleProxy( 0, GetPos(Index));
         diagnostic_msgs::DiagnosticStatus message;
         message.name = Name;
         message.hardware_id = Name;
@@ -272,12 +272,12 @@ namespace wm_kinova_hardware_interface {
 
                 AngularPosition PositionList;
                 MyGetAngularCommand(PositionList);
-                Pos[0] = PositionList.Actuators.Actuator1 / 160 * 3.14159 - Offset[0];
-                Pos[1] = PositionList.Actuators.Actuator2 / 180 * 3.14159 - Offset[1];
-                Pos[2] = PositionList.Actuators.Actuator3 / 180 * 3.14159 - Offset[2];
-                Pos[3] = PositionList.Actuators.Actuator4 / 180 * 3.14159 - Offset[3];
-                Pos[4] = PositionList.Actuators.Actuator5 / 180 * 3.14159 - Offset[4];
-                Pos[5] = PositionList.Actuators.Actuator6 / 180 * 3.14159 - Offset[5];
+                Pos[0] = PositionList.Actuators.Actuator1 / 160 * PI - Offset[0];
+                Pos[1] = PositionList.Actuators.Actuator2 / 180 * PI - Offset[1];
+                Pos[2] = PositionList.Actuators.Actuator3 / 180 * PI - Offset[2];
+                Pos[3] = PositionList.Actuators.Actuator4 / 180 * PI - Offset[3];
+                Pos[4] = PositionList.Actuators.Actuator5 / 180 * PI - Offset[4];
+                Pos[5] = PositionList.Actuators.Actuator6 / 180 * PI - Offset[5];
             }
             if (StatusMonitorOn) {
                 diagnostic_msgs::DiagnosticStatus message;

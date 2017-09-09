@@ -39,6 +39,7 @@ include_directories(
 
 
 add_library(${PROJECT_NAME}
+        include/WMKinovaHardwareInterface.h
         src/WMKinovaHardwareInterface.cpp
         )
 
