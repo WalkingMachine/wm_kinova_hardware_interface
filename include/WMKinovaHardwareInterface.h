@@ -19,7 +19,6 @@
 #include <pluginlib/class_list_macros.h>
 #include <math.h>
 
-#define PI 3.141592654
 
 namespace wm_kinova_hardware_interface
 {
@@ -103,7 +102,7 @@ namespace wm_kinova_hardware_interface
     }
     double AngleProxy( double A1 = 0, double A2 = 0 ) {  // Give the smallest difference between two angles in rad
         A1 = A2-A1;
-        A1 = Mod( A1+PI, 2*PI )-PI;
+        A1 = Mod( A1+M_PI, 2*M_PI )-M_PI;
         return A1;
     }
 }
