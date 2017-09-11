@@ -115,7 +115,7 @@ namespace wm_kinova_hardware_interface {
     }
 
     void WMKinovaHardwareInterface::write(const ros::Time &time, const ros::Duration &period) {
-        SetVel(Index, cmd*10); // from r/s to rmp = ~10
+        SetVel(Index, cmd*57.295779513); // from r/s to ded/p
     }
 
 // << ---- M E D I U M   L E V E L   I N T E R F A C E ---- >>
