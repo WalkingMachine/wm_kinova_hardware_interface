@@ -85,7 +85,7 @@ namespace wm_kinova_hardware_interface {
     void WMKinovaHardwareInterface::read(const ros::Time &time, const ros::Duration &period) {
 
         GetInfos();
-        std::cout << "\nIndex = " << Index << ", Position = " << Pos[Index] << ", Effort = " << Eff[Index];
+//        std::cout << "\nIndex = " << Index << ", Position = " << Pos[Index] << ", Effort = " << Eff[Index];
         pos = AngleProxy( 0, Pos[Index]);
         eff = Eff[Index];
         diagnostic_msgs::DiagnosticStatus message;
