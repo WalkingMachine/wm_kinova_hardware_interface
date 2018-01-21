@@ -27,7 +27,6 @@ namespace wm_kinova_hardware_interface {
     hardware_interface::JointStateInterface    WMKinovaHardwareInterface::joint_state_interface_;
     TrajectoryPoint WMKinovaHardwareInterface::pointToSend;
     ros::Publisher WMKinovaHardwareInterface::StatusPublisher;
-    ros::Publisher elbow_torque_publisher;
     void *WMKinovaHardwareInterface::commandLayer_handle;  //Handle for the library's command layer.
     KinovaDevice WMKinovaHardwareInterface::devices[MAX_KINOVA_DEVICE];
 
@@ -78,17 +77,15 @@ namespace wm_kinova_hardware_interface {
         registerInterface(&joint_velocity_interface_);
 
         TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticStatus>("diagnostics", 100);
-        if (Name == "right_elbow_pitch_joint") {
-          elbow_torque_publisher = nh.advertise<std_msgs::Float32>("elbow_torque", 100);
-        }
 
         return true;
     }
 
     void WMKinovaHardwareInterface::read(const ros::Time &time, const ros::Duration &period) {
 
-
-        pos = AngleProxy( 0, GetPos(Index));
+        GetInfos(Index);
+        pos = AngleProxy( 0, Pos[Index]);;
+        eff = Eff[Index];
         diagnostic_msgs::DiagnosticStatus message;
         message.name = Name;
         message.hardware_id = Name;
@@ -107,11 +104,6 @@ namespace wm_kinova_hardware_interface {
 
         message.values = {KV1, KV2};
         TemperaturePublisher.publish(message);
-        if (Name == "right_elbow_pitch_joint") {
-          std_msgs::Float32  msg;
-          msg.data = Eff[Index];
-          elbow_torque_publisher.publish(msg);
-        }
     }
 
     void WMKinovaHardwareInterface::write(const ros::Time &time, const ros::Duration &period) {
@@ -119,7 +111,7 @@ namespace wm_kinova_hardware_interface {
     }
 
 // << ---- M E D I U M   L E V E L   I N T E R F A C E ---- >>
-    double WMKinovaHardwareInterface::GetPos(int Index) {
+    bool WMKinovaHardwareInterface::GetInfos(int Index) {
         double Now = ros::Time::now().toNSec();
         bool result;  // true = no error
         if (LastGatherTime < Now - PERIOD) {
@@ -127,9 +119,10 @@ namespace wm_kinova_hardware_interface {
             result = GatherInfo();
             if (!result) {
                 ROS_ERROR("Kinova Hardware Interface.  error detected while trying to gather information");
+                return false;
             }
         }
-        return Pos[Index];
+        return true;
     }
 
     bool WMKinovaHardwareInterface::SetVel(int Index, double cmd) {
