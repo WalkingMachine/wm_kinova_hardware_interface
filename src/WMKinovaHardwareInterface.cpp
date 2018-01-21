@@ -4,6 +4,7 @@
 
 #include "WMKinovaHardwareInterface.h"
 #include <std_msgs/Float32.h>
+#include <iostream>
 
 
 namespace wm_kinova_hardware_interface {
@@ -83,8 +84,9 @@ namespace wm_kinova_hardware_interface {
 
     void WMKinovaHardwareInterface::read(const ros::Time &time, const ros::Duration &period) {
 
-        GetInfos(Index);
-        pos = AngleProxy( 0, Pos[Index]);;
+        GetInfos();
+        std::cout << "\nIndex = " << Index << ", Position = " << Pos[Index] << ", Effort = " << Eff[Index];
+        pos = AngleProxy( 0, Pos[Index]);
         eff = Eff[Index];
         diagnostic_msgs::DiagnosticStatus message;
         message.name = Name;
@@ -111,7 +113,7 @@ namespace wm_kinova_hardware_interface {
     }
 
 // << ---- M E D I U M   L E V E L   I N T E R F A C E ---- >>
-    bool WMKinovaHardwareInterface::GetInfos(int Index) {
+    bool WMKinovaHardwareInterface::GetInfos() {
         double Now = ros::Time::now().toNSec();
         bool result;  // true = no error
         if (LastGatherTime < Now - PERIOD) {
@@ -243,6 +245,15 @@ namespace wm_kinova_hardware_interface {
                 Current = -1;
                 Voltage = -1;
             } else {
+                AngularPosition PositionList;
+                MyGetAngularCommand(PositionList);
+                Pos[0] = PositionList.Actuators.Actuator1 / 160 * M_PI - Offset[0];
+                Pos[1] = PositionList.Actuators.Actuator2 / 180 * M_PI - Offset[1];
+                Pos[2] = PositionList.Actuators.Actuator3 / 180 * M_PI - Offset[2];
+                Pos[3] = PositionList.Actuators.Actuator4 / 180 * M_PI - Offset[3];
+                Pos[4] = PositionList.Actuators.Actuator5 / 180 * M_PI - Offset[4];
+                Pos[5] = PositionList.Actuators.Actuator6 / 180 * M_PI - Offset[5];
+
                 SensorsInfo SI;
                 MyGetSensorsInfo(SI);
                 Temperature[0] = SI.ActuatorTemp1;
@@ -263,14 +274,6 @@ namespace wm_kinova_hardware_interface {
                 Eff[4] = ForceList.Actuators.Actuator5;
                 Eff[5] = ForceList.Actuators.Actuator6;
 
-                AngularPosition PositionList;
-                MyGetAngularCommand(PositionList);
-                Pos[0] = PositionList.Actuators.Actuator1 / 160 * M_PI - Offset[0];
-                Pos[1] = PositionList.Actuators.Actuator2 / 180 * M_PI - Offset[1];
-                Pos[2] = PositionList.Actuators.Actuator3 / 180 * M_PI - Offset[2];
-                Pos[3] = PositionList.Actuators.Actuator4 / 180 * M_PI - Offset[3];
-                Pos[4] = PositionList.Actuators.Actuator5 / 180 * M_PI - Offset[4];
-                Pos[5] = PositionList.Actuators.Actuator6 / 180 * M_PI - Offset[5];
             }
             if (StatusMonitorOn) {
                 diagnostic_msgs::DiagnosticStatus message;
