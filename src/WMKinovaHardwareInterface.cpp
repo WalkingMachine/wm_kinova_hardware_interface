@@ -4,6 +4,7 @@
 
 #include "WMKinovaHardwareInterface.h"
 #include <std_msgs/Float32.h>
+#include <iostream>
 
 
 namespace wm_kinova_hardware_interface {
@@ -27,7 +28,6 @@ namespace wm_kinova_hardware_interface {
     hardware_interface::JointStateInterface    WMKinovaHardwareInterface::joint_state_interface_;
     TrajectoryPoint WMKinovaHardwareInterface::pointToSend;
     ros::Publisher WMKinovaHardwareInterface::StatusPublisher;
-    ros::Publisher elbow_torque_publisher;
     void *WMKinovaHardwareInterface::commandLayer_handle;  //Handle for the library's command layer.
     KinovaDevice WMKinovaHardwareInterface::devices[MAX_KINOVA_DEVICE];
 
@@ -66,10 +66,32 @@ namespace wm_kinova_hardware_interface {
         if (!robot_hw_nh.getParam("offset", Offset[Index])) {
             return false;
         }
+        if (!robot_hw_nh.getParam("complience_level", ComplienceLevel)){
+            ComplienceLevel = 1;
+        }
+        if (!robot_hw_nh.getParam("complience_threshold", ComplienceThreshold)){
+            ComplienceThreshold = 100;
+        }
+        if (!robot_hw_nh.getParam("complience_derivation_factor", ComplienceDerivationFactor)){
+            ComplienceThreshold = 0.01;
+        }
+        if (!robot_hw_nh.getParam("complience_loss_factor", ComplienceLossFactor)){
+            ComplienceThreshold = 0.75;
+        }
+        if (!robot_hw_nh.getParam("complience_resistance", ComplienceResistance)){
+            ComplienceResistance = 0.5;
+        }
+        if (!robot_hw_nh.getParam("speed_ratio", SpeedRatio)){
+            SpeedRatio = 1;
+        }
+
+
         cmd = 0;
         pos = 0;
         vel = 0;
         eff = 0;
+        seff = 0;
+        deff = 0;
         FreeIndex[Index] = false;
 
         joint_state_interface_.registerHandle(JointStateHandle(Name, &pos, &vel, &eff));
@@ -78,17 +100,16 @@ namespace wm_kinova_hardware_interface {
         registerInterface(&joint_velocity_interface_);
 
         TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticStatus>("diagnostics", 100);
-        if (Name == "right_elbow_pitch_joint") {
-          elbow_torque_publisher = nh.advertise<std_msgs::Float32>("elbow_torque", 100);
-        }
 
         return true;
     }
 
     void WMKinovaHardwareInterface::read(const ros::Time &time, const ros::Duration &period) {
 
-
-        pos = AngleProxy( 0, GetPos(Index));
+        GetInfos();
+        //std::cout << "\nIndex = " << Index << ", Position = " << Pos[Index] << ", Effort = " << Eff[Index];
+        pos = AngleProxy( 0, Pos[Index]);
+        eff = Eff[Index];
         diagnostic_msgs::DiagnosticStatus message;
         message.name = Name;
         message.hardware_id = Name;
@@ -107,19 +128,29 @@ namespace wm_kinova_hardware_interface {
 
         message.values = {KV1, KV2};
         TemperaturePublisher.publish(message);
-        if (Name == "right_elbow_pitch_joint") {
-          std_msgs::Float32  msg;
-          msg.data = Eff[Index];
-          elbow_torque_publisher.publish(msg);
-        }
     }
 
     void WMKinovaHardwareInterface::write(const ros::Time &time, const ros::Duration &period) {
-        SetVel(Index, cmd*57.295779513); // from r/s to ded/p
+        double cmdVel{cmd*57.295779513};
+
+        seff += (eff-seff)*ComplienceLossFactor;
+
+        deff += (seff-deff)*ComplienceDerivationFactor;
+
+
+
+//        std::cout << "\nIndex = " << ", Effort = " << (seff-deff)*(seff-deff);
+        if ((seff-deff)*(seff-deff)>ComplienceThreshold){
+            cmdVel += (-2*seff+deff)*ComplienceLevel;
+        } else {
+            deff += (seff-deff)*ComplienceResistance;
+        }
+        SetVel(Index, cmdVel*SpeedRatio); // from r/s to ded/p
+
     }
 
 // << ---- M E D I U M   L E V E L   I N T E R F A C E ---- >>
-    double WMKinovaHardwareInterface::GetPos(int Index) {
+    bool WMKinovaHardwareInterface::GetInfos() {
         double Now = ros::Time::now().toNSec();
         bool result;  // true = no error
         if (LastGatherTime < Now - PERIOD) {
@@ -127,9 +158,10 @@ namespace wm_kinova_hardware_interface {
             result = GatherInfo();
             if (!result) {
                 ROS_ERROR("Kinova Hardware Interface.  error detected while trying to gather information");
+                return false;
             }
         }
-        return Pos[Index];
+        return true;
     }
 
     bool WMKinovaHardwareInterface::SetVel(int Index, double cmd) {
@@ -250,6 +282,15 @@ namespace wm_kinova_hardware_interface {
                 Current = -1;
                 Voltage = -1;
             } else {
+                AngularPosition PositionList;
+                MyGetAngularCommand(PositionList);
+                Pos[0] = PositionList.Actuators.Actuator1 / 160 * M_PI - Offset[0];
+                Pos[1] = PositionList.Actuators.Actuator2 / 180 * M_PI - Offset[1];
+                Pos[2] = PositionList.Actuators.Actuator3 / 180 * M_PI - Offset[2];
+                Pos[3] = PositionList.Actuators.Actuator4 / 180 * M_PI - Offset[3];
+                Pos[4] = PositionList.Actuators.Actuator5 / 180 * M_PI - Offset[4];
+                Pos[5] = PositionList.Actuators.Actuator6 / 180 * M_PI - Offset[5];
+
                 SensorsInfo SI;
                 MyGetSensorsInfo(SI);
                 Temperature[0] = SI.ActuatorTemp1;
@@ -270,14 +311,6 @@ namespace wm_kinova_hardware_interface {
                 Eff[4] = ForceList.Actuators.Actuator5;
                 Eff[5] = ForceList.Actuators.Actuator6;
 
-                AngularPosition PositionList;
-                MyGetAngularCommand(PositionList);
-                Pos[0] = PositionList.Actuators.Actuator1 / 160 * M_PI - Offset[0];
-                Pos[1] = PositionList.Actuators.Actuator2 / 180 * M_PI - Offset[1];
-                Pos[2] = PositionList.Actuators.Actuator3 / 180 * M_PI - Offset[2];
-                Pos[3] = PositionList.Actuators.Actuator4 / 180 * M_PI - Offset[3];
-                Pos[4] = PositionList.Actuators.Actuator5 / 180 * M_PI - Offset[4];
-                Pos[5] = PositionList.Actuators.Actuator6 / 180 * M_PI - Offset[5];
             }
             if (StatusMonitorOn) {
                 diagnostic_msgs::DiagnosticStatus message;

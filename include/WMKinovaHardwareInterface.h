@@ -38,6 +38,16 @@ namespace wm_kinova_hardware_interface
         double pos;
         double vel;
         double eff;
+        double seff;
+        double deff;
+        double SpeedRatio;
+        double ComplienceLevel;
+        double ComplienceThreshold;
+        double ComplienceLossFactor;
+        double ComplienceDerivationFactor;
+        double ComplienceResistance;
+
+
         static double Cmd[6];
         static double Pos[6];
         static double Vel[6];
@@ -48,7 +58,7 @@ namespace wm_kinova_hardware_interface
     private:
         // << ---- M E D I U M   L E V E L   I N T E R F A C E ---- >>
         // Functions
-        static double GetPos(int Index);
+        static bool GetInfos();
         static bool SetVel(int Index, double Vel);
         static bool InitKinova();
 
