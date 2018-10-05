@@ -90,8 +90,6 @@ namespace wm_kinova_hardware_interface {
         pos = 0;
         vel = 0;
         eff = 0;
-        seff = 0;
-        deff = 0;
         FreeIndex[Index] = false;
 
         joint_state_interface_.registerHandle(JointStateHandle(Name, &pos, &vel, &eff));
@@ -100,6 +98,10 @@ namespace wm_kinova_hardware_interface {
         registerInterface(&joint_velocity_interface_);
 
         TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticStatus>("diagnostics", 100);
+
+        read(ros::Time::now(), ros::Time(0));
+        seff = eff;
+        deff = 0;
 
         return true;
     }
