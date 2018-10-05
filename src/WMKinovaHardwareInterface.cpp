@@ -99,7 +99,7 @@ namespace wm_kinova_hardware_interface {
 
         TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticStatus>("diagnostics", 100);
 
-        read(ros::Time::now(), ros::Time(0));
+        read(ros::Time::now(), ros::Duration(0));
         seff = eff;
         deff = 0;
 
