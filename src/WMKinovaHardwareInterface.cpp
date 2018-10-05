@@ -100,8 +100,8 @@ namespace wm_kinova_hardware_interface {
         TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticStatus>("diagnostics", 100);
 
         GatherInfo();
-        seff = eff;
-        deff = 0;
+        seff = Eff[Index];
+        deff = seff;
 
         return true;
     }
