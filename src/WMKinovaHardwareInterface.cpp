@@ -14,7 +14,7 @@ namespace wm_kinova_hardware_interface {
     bool WMKinovaHardwareInterface::KinovaReady = false;
     bool WMKinovaHardwareInterface::KinovaLoaded = false;
     double WMKinovaHardwareInterface::LastSentTime = 0;
-    double WMKinovaHardwareInterface::LastGatherTime = -PERIOD-1;
+    double WMKinovaHardwareInterface::LastGatherTime = 0;
     double WMKinovaHardwareInterface::Current = 0;
     double WMKinovaHardwareInterface::Voltage = 0;
     bool WMKinovaHardwareInterface::FreeIndex[6];
@@ -99,10 +99,8 @@ namespace wm_kinova_hardware_interface {
 
         TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticStatus>("diagnostics", 100);
 
-
-        // Obtient la mesure d'effort initiale pour compenser la gravité
-        GetInfos();
-        seff = Eff[Index];
+        read(ros::Time::now(), ros::Duration(0));
+        seff = eff;
         deff = 0;
 
         return true;
