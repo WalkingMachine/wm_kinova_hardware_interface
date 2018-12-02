@@ -41,7 +41,7 @@ namespace wm_kinova_hardware_interface {
     int (*WMKinovaHardwareInterface::MyGetAngularCommand)(AngularPosition &);
     int (*WMKinovaHardwareInterface::MyGetAngularForce)(AngularPosition &Response);
     int (*WMKinovaHardwareInterface::MyEraseAllTrajectories)();
-    bool WMKinovaHardwareInterface::StatusMonitorOn = false;
+    bool WMKinovaHardwareInterface::StatusMonitorOn = true;
     bool WMKinovaHardwareInterface::Simulation = false;
 
 // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
@@ -97,7 +97,7 @@ namespace wm_kinova_hardware_interface {
         registerInterface(&joint_state_interface_);
         registerInterface(&joint_velocity_interface_);
 
-        TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticStatus>("diagnostics", 100);
+        TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticArray>("diagnostics", 100);
 
         GatherInfo();
         seff = Eff[Index];
@@ -110,12 +110,13 @@ namespace wm_kinova_hardware_interface {
 
         GetInfos();
         //std::cout << "\nIndex = " << Index << ", Position = " << Pos[Index] << ", Effort = " << Eff[Index];
+        diagnostic_msgs::DiagnosticArray dia_array;
+
         pos = AngleProxy( 0, Pos[Index]);
         eff = Eff[Index];
-        diagnostic_msgs::DiagnosticStatus message;
-        message.name = Name;
-        message.hardware_id = Name;
-
+        diagnostic_msgs::DiagnosticStatus dia_status;
+        dia_status.name = "kinova_arm";
+        dia_status.hardware_id = Name;
 
         diagnostic_msgs::KeyValue KV1;
         KV1.key = "temperature";
@@ -127,9 +128,13 @@ namespace wm_kinova_hardware_interface {
         KV2.key = "torque";
         std::sprintf(chare, "%lf", Eff[Index]);
         KV2.value = chare;
+        
+        dia_status.values.push_back(KV1);
+        dia_status.values.push_back(KV2);
+        
+        dia_array.status.push_back(dia_status);        
 
-        message.values = {KV1, KV2};
-        TemperaturePublisher.publish(message);
+        TemperaturePublisher.publish(dia_array);
     }
 
     void WMKinovaHardwareInterface::write(const ros::Time &time, const ros::Duration &period) {
@@ -267,7 +272,7 @@ namespace wm_kinova_hardware_interface {
         std::string NodeName = "kinova status";
         ros::init(argc, argv, NodeName);
         ros::NodeHandle n;
-        StatusPublisher = n.advertise<diagnostic_msgs::DiagnosticStatus>("diagnostics", 100);
+        StatusPublisher = n.advertise<diagnostic_msgs::DiagnosticArray>("diagnostics", 100);
         ros::spinOnce();
         return true;
     }
@@ -315,9 +320,13 @@ namespace wm_kinova_hardware_interface {
 
             }
             if (StatusMonitorOn) {
-                diagnostic_msgs::DiagnosticStatus message;
-                message.name = "kinova_arm";
-                message.hardware_id = "kinova_arm";
+
+                diagnostic_msgs::DiagnosticArray dia_array2;
+
+                diagnostic_msgs::DiagnosticStatus dia_status;
+                dia_status.name = "kinova_arm";
+                dia_status.hardware_id = "kinova_arm";
+
                 diagnostic_msgs::KeyValue KV1;
                 KV1.key = "current";
                 char chare[50];
@@ -329,8 +338,12 @@ namespace wm_kinova_hardware_interface {
                 std::sprintf(chare, "%lf", Voltage);
                 KV2.value = chare;
 
-                message.values = {KV1, KV2};
-                StatusPublisher.publish(message);
+                dia_status.values.push_back(KV1);
+                dia_status.values.push_back(KV2);
+
+                dia_array2.status.push_back(dia_status); 
+ 
+                StatusPublisher.publish(dia_array2);
 
             }
         }

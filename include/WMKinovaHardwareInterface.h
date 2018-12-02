@@ -16,6 +16,9 @@
 #include <WMKinovaHardwareInterface.h>
 #include <hardware_interface/joint_command_interface.h>
 #include "diagnostic_msgs/DiagnosticStatus.h"
+#include "diagnostic_msgs/DiagnosticArray.h"
+#include "diagnostic_msgs/KeyValue.h"
+
 #include <pluginlib/class_list_macros.h>
 #include <math.h>
 
@@ -117,3 +120,4 @@ namespace wm_kinova_hardware_interface
     }
 }
 #endif //PROJECT_WMKinovaHardwareInterface_H
+
