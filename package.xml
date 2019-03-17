@@ -29,6 +29,9 @@
   <build_depend>roscpp</build_depend>
   <run_depend>roscpp</run_depend>
 
+  <build_depend>wm_admitance</build_depend>
+  <run_depend>wm_admitance</run_depend>
+
   <build_depend>hardware_interface</build_depend>
   <run_depend>hardware_interface</run_depend>
 

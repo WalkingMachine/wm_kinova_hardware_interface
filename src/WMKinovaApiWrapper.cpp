@@ -33,6 +33,7 @@ void* WMKinovaApiWrapper::kinovaHandle;
 
 void WMKinovaApiWrapper::initialize() 
 {
+
     if (!isAPIInitialized.load()) 
     {
         dlerror(); // Ensures errors are cleared before attempting to load library.

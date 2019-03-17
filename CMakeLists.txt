@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
     hardware_interface
     roscpp
     std_msgs
+    wm_admitance
 )
 
 ## System dependencies are found with CMake's conventions
@@ -22,7 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ${PROJECT_NAME}
-    CATKIN_DEPENDS combined_robot_hw hardware_interface roscpp
+    CATKIN_DEPENDS combined_robot_hw hardware_interface roscpp wm_admitance
 )
 
 

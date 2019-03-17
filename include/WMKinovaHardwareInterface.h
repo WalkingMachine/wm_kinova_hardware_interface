@@ -8,19 +8,19 @@
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
-#include <string>
-#include <ros/ros.h>
-#include <WMKinovaHardwareInterface.h>
 #include <hardware_interface/joint_command_interface.h>
-#include "diagnostic_msgs/DiagnosticStatus.h"
-#include "diagnostic_msgs/DiagnosticArray.h"
-#include "diagnostic_msgs/KeyValue.h"
 
-#include "WMKinovaApiWrapper.h"
+#include <diagnostic_msgs/DiagnosticStatus.h>
+#include <diagnostic_msgs/DiagnosticArray.h>
+#include <diagnostic_msgs/KeyValue.h>
 
 #include <pluginlib/class_list_macros.h>
+
+#include <string>
+#include <ros/ros.h>
 #include <math.h>
 
+#include "WMKinovaApiWrapper.h"
 
 namespace wm_kinova_hardware_interface
 {

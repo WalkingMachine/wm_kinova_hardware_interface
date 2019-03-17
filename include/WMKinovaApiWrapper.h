@@ -18,6 +18,8 @@ namespace wm_kinova_hardware_interface
     {
     public:
 
+        WMKinovaApiWrapper() = delete;
+
         static void initialize();
 
         // \brief Checks if API is initialized

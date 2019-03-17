@@ -4,6 +4,9 @@
 //
 
 #include "WMKinovaHardwareInterface.h"
+
+#include "WMAdmitance/WMAdmitance.h"
+
 #include <std_msgs/Float32.h>
 #include <iostream>
 
@@ -112,7 +115,7 @@ bool WMKinovaHardwareInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &
     registerInterface(&joint_state_interface_);
     registerInterface(&joint_velocity_interface_);
 
-    TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticArray>("diagnostics", 100);
+    //TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticArray>("diagnostics", 100);
 
     GatherInfo();
     seff = Eff[Index];
@@ -149,7 +152,7 @@ void WMKinovaHardwareInterface::read(const ros::Time &time, const ros::Duration 
     
     dia_array.status.push_back(dia_status);        
 
-    TemperaturePublisher.publish(dia_array);
+    //TemperaturePublisher.publish(dia_array);
 }
 
 void WMKinovaHardwareInterface::write(const ros::Time &time, const ros::Duration &period) {
@@ -274,6 +277,7 @@ bool WMKinovaHardwareInterface::GatherInfo() {
             for (int i = 0; i < 6; i++) {
                 Temperature[i] = 0.1234;
                 Pos[i] += Vel[i] / 50000;
+                Eff[i] += 1;
             }
             Current = -1;
             Voltage = -1;
@@ -332,7 +336,7 @@ bool WMKinovaHardwareInterface::GatherInfo() {
 
             dia_array2.status.push_back(dia_status); 
 
-            StatusPublisher.publish(dia_array2);
+            //StatusPublisher.publish(dia_array2);
 
         }
     }
@@ -358,6 +362,8 @@ bool WMKinovaHardwareInterface::SendPoint() {
             pointToSend.Position.Actuators.Actuator4 = (float) Cmd[3];
             pointToSend.Position.Actuators.Actuator5 = (float) Cmd[4];
             pointToSend.Position.Actuators.Actuator6 = (float) Cmd[5];
+
+
 
 
             WMKinovaApiWrapper::MyEraseAllTrajectories();
