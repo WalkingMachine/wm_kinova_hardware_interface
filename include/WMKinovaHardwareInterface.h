@@ -20,10 +20,16 @@
 #include <ros/ros.h>
 #include <math.h>
 
+#include <boost/container/flat_map.hpp>
+
 #include "WMKinovaApiWrapper.h"
+
+#include "WMAdmitance/WMAdmitance.h"
 
 namespace wm_kinova_hardware_interface
 {
+
+    using IndexByJointNameMapType = boost::container::flat_map<int, std::string>;
 
     class WMKinovaHardwareInterface : public hardware_interface::RobotHW {
     public:
@@ -75,6 +81,7 @@ namespace wm_kinova_hardware_interface
         static double Voltage;
         static bool FreeIndex[6];
         static bool Simulation;
+        static IndexByJointNameMapType aIndexByJointNameMap;
 
         // << ---- L O W   L E V E L   I N T E R F A C E ---- >>
         // Functions
@@ -90,6 +97,8 @@ namespace wm_kinova_hardware_interface
         static double LastGatherTime;
         static TrajectoryPoint pointToSend;
         static KinovaDevice devices[MAX_KINOVA_DEVICE];
+
+        static wm_admitance::WMAdmitance* aAdmitance;
     };
 
     inline double Mod( double A, double N ) {

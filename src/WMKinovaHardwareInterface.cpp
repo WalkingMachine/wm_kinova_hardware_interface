@@ -5,12 +5,11 @@
 
 #include "WMKinovaHardwareInterface.h"
 
-#include "WMAdmitance/WMAdmitance.h"
-
 #include <std_msgs/Float32.h>
 #include <iostream>
 
 using namespace wm_kinova_hardware_interface;
+using namespace wm_admitance;
 
 namespace 
 {
@@ -37,8 +36,12 @@ TrajectoryPoint WMKinovaHardwareInterface::pointToSend;
 ros::Publisher WMKinovaHardwareInterface::StatusPublisher;
 KinovaDevice WMKinovaHardwareInterface::devices[MAX_KINOVA_DEVICE];
 
+WMAdmitance* WMKinovaHardwareInterface::aAdmitance;
+
 bool WMKinovaHardwareInterface::StatusMonitorOn = true;
 bool WMKinovaHardwareInterface::Simulation = false;
+
+IndexByJointNameMapType WMKinovaHardwareInterface::aIndexByJointNameMap;
 
 // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
 
@@ -75,6 +78,8 @@ bool WMKinovaHardwareInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &
     Name = "";
     Index = 0;
     std::vector<std::string> Joints;
+
+    // Mandatory parameters
     if (!robot_hw_nh.getParam("joints", Joints)) {
         return false;
     }
@@ -85,6 +90,9 @@ bool WMKinovaHardwareInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &
     if (!robot_hw_nh.getParam("offset", Offset[Index])) {
         return false;
     }
+
+    aIndexByJointNameMap.emplace(Index, Name);
+
     if (!robot_hw_nh.getParam("complience_level", ComplienceLevel)){
         ComplienceLevel = 1;
     }
@@ -103,6 +111,8 @@ bool WMKinovaHardwareInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &
     if (!robot_hw_nh.getParam("speed_ratio", SpeedRatio)){
         SpeedRatio = 1;
     }
+
+    aAdmitance = wm_admitance::WMAdmitance::getInstance();
 
     cmd = 0;
     pos = 0;
@@ -347,7 +357,14 @@ bool WMKinovaHardwareInterface::SendPoint() {
 
     if (KinovaReady) {
         for (int i = 0; i < 6; i++) {
-            Vel[i] = Cmd[i];
+            if (aAdmitance->isAdmitanceEnabled())
+            {
+                Vel[i] = aAdmitance->getAdmitanceVelocityFromJoint(aIndexByJointNameMap[i]);
+            }
+            else
+            {
+                Vel[i] = Cmd[i];
+            }
         }
         if (Simulation) {
             // Do crude simulation
@@ -362,9 +379,6 @@ bool WMKinovaHardwareInterface::SendPoint() {
             pointToSend.Position.Actuators.Actuator4 = (float) Cmd[3];
             pointToSend.Position.Actuators.Actuator5 = (float) Cmd[4];
             pointToSend.Position.Actuators.Actuator6 = (float) Cmd[5];
-
-
-
 
             WMKinovaApiWrapper::MyEraseAllTrajectories();
             //ROS_INFO( "Send!" );
