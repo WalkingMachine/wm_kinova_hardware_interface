@@ -9,7 +9,7 @@
 #include <iostream>
 
 using namespace wm_kinova_hardware_interface;
-using namespace wm_admitance;
+using namespace wm_admittance;
 
 namespace 
 {
@@ -36,7 +36,7 @@ TrajectoryPoint WMKinovaHardwareInterface::pointToSend;
 ros::Publisher WMKinovaHardwareInterface::StatusPublisher;
 KinovaDevice WMKinovaHardwareInterface::devices[MAX_KINOVA_DEVICE];
 
-WMAdmitance* WMKinovaHardwareInterface::aAdmitance;
+WMAdmittance* WMKinovaHardwareInterface::aAdmittance;
 
 bool WMKinovaHardwareInterface::StatusMonitorOn = true;
 bool WMKinovaHardwareInterface::Simulation = false;
@@ -112,7 +112,7 @@ bool WMKinovaHardwareInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &
         SpeedRatio = 1;
     }
 
-    aAdmitance = wm_admitance::WMAdmitance::getInstance();
+    aAdmittance = wm_admittance::WMAdmittance::getInstance();
 
     cmd = 0;
     pos = 0;
@@ -357,9 +357,9 @@ bool WMKinovaHardwareInterface::SendPoint() {
 
     if (KinovaReady) {
         for (int i = 0; i < 6; i++) {
-            if (aAdmitance->isAdmitanceEnabled())
+            if (aAdmittance->isAdmittanceEnabled())
             {
-                Vel[i] = aAdmitance->getAdmitanceVelocityFromJoint(aIndexByJointNameMap[i]);
+                Vel[i] = aAdmittance->getAdmittanceVelocityFromJoint(aIndexByJointNameMap[i]);
             }
             else
             {

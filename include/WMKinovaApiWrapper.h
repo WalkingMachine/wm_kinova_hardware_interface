@@ -1,6 +1,6 @@
 // \file WMKinovaApiWrapper.h
 // \brief Declaration of wrapper over Kinova API.
-// Created by kevin on 03/03/2019.
+// \author Kevin Blackburn
 
 #ifndef PROJECT_WMKINOVAAPIWRAPPER_H
 #define PROJECT_WMKINOVAAPIWRAPPER_H

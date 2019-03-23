@@ -24,7 +24,7 @@
 
 #include "WMKinovaApiWrapper.h"
 
-#include "WMAdmitance/WMAdmitance.h"
+#include "WMAdmittance/WMAdmittance.h"
 
 namespace wm_kinova_hardware_interface
 {
@@ -98,7 +98,7 @@ namespace wm_kinova_hardware_interface
         static TrajectoryPoint pointToSend;
         static KinovaDevice devices[MAX_KINOVA_DEVICE];
 
-        static wm_admitance::WMAdmitance* aAdmitance;
+        static wm_admittance::WMAdmittance* aAdmittance;
     };
 
     inline double Mod( double A, double N ) {

@@ -1,6 +1,6 @@
 // \file WMKinovaApiWrapper.cpp
 // \brief Definition of wrapper over Kinova API.
-// Created by kevin on 03/03/2019.
+// \author Kevin Blackburn
 
 #include "WMKinovaApiWrapper.h"
 
