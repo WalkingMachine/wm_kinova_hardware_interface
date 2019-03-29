@@ -167,20 +167,28 @@ void WMKinovaHardwareInterface::read(const ros::Time &time, const ros::Duration 
 
 void WMKinovaHardwareInterface::write(const ros::Time &time, const ros::Duration &period) 
 {
-    double cmdVel{cmd*57.295779513};
-
-    if (!aAdmittance->isAdmittanceEnabled())
+    double cmdVel;
+    if (aAdmittance->isAdmittanceEnabled())
     {
-        seff += (eff-seff)*ComplienceLossFactor;
-
-        deff += (seff-deff)*ComplienceDerivationFactor;
-
-        if ((seff-deff)*(seff-deff)>ComplienceThreshold){
-            cmdVel += (-2*seff+deff)*ComplienceLevel;
-        } else {
-            deff += (seff-deff)*ComplienceResistance;
-        }
+        cmdVel = aAdmittance->getAdmittanceVelocityFromJoint(aIndexByJointNameMap[i]);
     }
+    else
+    {
+        cmdVel = cmd * 57.295779513;
+    }
+
+    //if (!aAdmittance->isAdmittanceEnabled())
+    //{
+    //    seff += (eff-seff)*ComplienceLossFactor;
+//
+    //    deff += (seff-deff)*ComplienceDerivationFactor;
+//
+    //    if ((seff-deff)*(seff-deff)>ComplienceThreshold){
+    //        cmdVel += (-2*seff+deff)*ComplienceLevel;
+    //    } else {
+    //        deff += (seff-deff)*ComplienceResistance;
+    //    }
+    //}
 
     SetVel(Index, cmdVel*SpeedRatio); // from r/s to ded/p
 
@@ -358,15 +366,9 @@ bool WMKinovaHardwareInterface::GatherInfo() {
 bool WMKinovaHardwareInterface::SendPoint() {
 
     if (KinovaReady) {
-        for (int i = 0; i < 6; i++) {
-            if (aAdmittance->isAdmittanceEnabled())
-            {
-                Vel[i] = aAdmittance->getAdmittanceVelocityFromJoint(aIndexByJointNameMap[i]);
-            }
-            else
-            {
-                Vel[i] = Cmd[i];
-            }
+        for (int i = 0; i < 6; i++)
+        {
+            Vel[i] = Cmd[i];
         }
         if (Simulation) {
             // Do crude simulation
