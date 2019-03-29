@@ -170,7 +170,7 @@ void WMKinovaHardwareInterface::write(const ros::Time &time, const ros::Duration
     double cmdVel;
     if (aAdmittance->isAdmittanceEnabled())
     {
-        cmdVel = aAdmittance->getAdmittanceVelocityFromJoint(aIndexByJointNameMap[i]);
+        cmdVel = aAdmittance->getAdmittanceVelocityFromJoint(aIndexByJointNameMap[Index]);
     }
     else
     {
