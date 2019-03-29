@@ -165,21 +165,23 @@ void WMKinovaHardwareInterface::read(const ros::Time &time, const ros::Duration 
     //TemperaturePublisher.publish(dia_array);
 }
 
-void WMKinovaHardwareInterface::write(const ros::Time &time, const ros::Duration &period) {
+void WMKinovaHardwareInterface::write(const ros::Time &time, const ros::Duration &period) 
+{
     double cmdVel{cmd*57.295779513};
 
-    seff += (eff-seff)*ComplienceLossFactor;
+    if (!aAdmittance->isAdmittanceEnabled())
+    {
+        seff += (eff-seff)*ComplienceLossFactor;
 
-    deff += (seff-deff)*ComplienceDerivationFactor;
+        deff += (seff-deff)*ComplienceDerivationFactor;
 
-
-
-//        std::cout << "\nIndex = " << ", Effort = " << (seff-deff)*(seff-deff);
-    if ((seff-deff)*(seff-deff)>ComplienceThreshold){
-        cmdVel += (-2*seff+deff)*ComplienceLevel;
-    } else {
-        deff += (seff-deff)*ComplienceResistance;
+        if ((seff-deff)*(seff-deff)>ComplienceThreshold){
+            cmdVel += (-2*seff+deff)*ComplienceLevel;
+        } else {
+            deff += (seff-deff)*ComplienceResistance;
+        }
     }
+
     SetVel(Index, cmdVel*SpeedRatio); // from r/s to ded/p
 
 }
