@@ -11,7 +11,7 @@
 using namespace wm_kinova_hardware_interface;
 using namespace wm_admittance;
 
-namespace 
+namespace
 {
     const uint PERIOD = 6000000;
 }
@@ -45,9 +45,9 @@ IndexByJointNameMapType WMKinovaHardwareInterface::aIndexByJointNameMap;
 
 // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
 
-bool WMKinovaHardwareInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_hw_nh) 
+bool WMKinovaHardwareInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_hw_nh)
 {
-    if (!KinovaLoaded) 
+    if (!KinovaLoaded)
     {
         KinovaLoaded = true;
         KinovaLoaded = InitKinova();
@@ -56,7 +56,7 @@ bool WMKinovaHardwareInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &
 
     RetrieveDevices();
 
-    for (int i = 0; i < 16; i++) 
+    for (int i = 0; i < 16; i++)
     {
         FreeIndex[i] = true;
     }
@@ -142,39 +142,47 @@ void WMKinovaHardwareInterface::read(const ros::Time &time, const ros::Duration 
 
     pos = AngleProxy( 0, Pos[Index]);
     eff = Eff[Index];
-    diagnostic_msgs::DiagnosticStatus dia_status;
-    dia_status.name = "kinova_arm";
-    dia_status.hardware_id = Name;
 
-    diagnostic_msgs::KeyValue KV1;
-    KV1.key = "temperature";
-    char chare[50];
-    std::sprintf(chare, "%lf", Temperature[Index]);
-    KV1.value = chare;
-
-    diagnostic_msgs::KeyValue KV2;
-    KV2.key = "torque";
-    std::sprintf(chare, "%lf", Eff[Index]);
-    KV2.value = chare;
-    
-    dia_status.values.push_back(KV1);
-    dia_status.values.push_back(KV2);
-    
-    dia_array.status.push_back(dia_status);        
-
-    //TemperaturePublisher.publish(dia_array);
+//    diagnostic_msgs::DiagnosticStatus dia_status;
+//    dia_status.name = "kinova_arm";
+//    dia_status.hardware_id = Name;
+//
+//    diagnostic_msgs::KeyValue KV1;
+//    KV1.key = "temperature";
+//    char chare[50];
+//    std::sprintf(chare, "%lf", Temperature[Index]);
+//    KV1.value = chare;
+//
+//    diagnostic_msgs::KeyValue KV2;
+//    KV2.key = "torque";
+//    std::sprintf(chare, "%lf", Eff[Index]);
+//    KV2.value = chare;
+//
+//    dia_status.values.push_back(KV1);
+//    dia_status.values.push_back(KV2);
+//
+//    dia_array.status.push_back(dia_status);
+//
+//    TemperaturePublisher.publish(dia_array);
 }
 
-void WMKinovaHardwareInterface::write(const ros::Time &time, const ros::Duration &period) 
+void WMKinovaHardwareInterface::write(const ros::Time &time, const ros::Duration &period)
 {
     double cmdVel;
-    if (aAdmittance->isAdmittanceEnabled())
-    {
-        cmdVel = aAdmittance->getAdmittanceVelocityFromJoint(aIndexByJointNameMap[Index]);
+    if (aAdmittance->isAdmittanceEnabled()) {
+        cmdVel = aAdmittance->getAdmittanceVelocityFromJoint(aIndexByJointNameMap[Index]) + cmd * 57.295779513;
     }
-    else
-    {
+    else {
         cmdVel = cmd * 57.295779513;
+        seff += (eff-seff)*ComplienceLossFactor;
+        deff += (seff-deff)*ComplienceDerivationFactor;
+
+        if ((seff-deff)*(seff-deff)>ComplienceThreshold) {
+            cmdVel += (-2*seff+deff)*ComplienceLevel;
+        }
+        else {
+            deff += (seff-deff)*ComplienceResistance;
+        }
     }
 
     //if (!aAdmittance->isAdmittanceEnabled())
@@ -245,7 +253,7 @@ bool WMKinovaHardwareInterface::InitKinova() noexcept
     return kinovaInitialized;
 }
 
-bool WMKinovaHardwareInterface::RetrieveDevices() 
+bool WMKinovaHardwareInterface::RetrieveDevices()
 {
 
     bool Success = false;
@@ -354,7 +362,7 @@ bool WMKinovaHardwareInterface::GatherInfo() {
             dia_status.values.push_back(KV1);
             dia_status.values.push_back(KV2);
 
-            dia_array2.status.push_back(dia_status); 
+            dia_array2.status.push_back(dia_status);
 
             //StatusPublisher.publish(dia_array2);
 
