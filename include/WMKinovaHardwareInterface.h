@@ -5,26 +5,31 @@
 #ifndef PROJECT_WMKinovaHardwareInterface_H
 #define PROJECT_WMKinovaHardwareInterface_H
 
-#include "Kinova.API.CommLayerUbuntu.h"
-#include "KinovaTypes.h"
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
-#include <string>
-#include <ros/ros.h>
-#include <dlfcn.h>
-#include <WMKinovaHardwareInterface.h>
 #include <hardware_interface/joint_command_interface.h>
-#include "diagnostic_msgs/DiagnosticStatus.h"
-#include "diagnostic_msgs/DiagnosticArray.h"
-#include "diagnostic_msgs/KeyValue.h"
+
+#include <diagnostic_msgs/DiagnosticStatus.h>
+#include <diagnostic_msgs/DiagnosticArray.h>
+#include <diagnostic_msgs/KeyValue.h>
 
 #include <pluginlib/class_list_macros.h>
+
+#include <string>
+#include <ros/ros.h>
 #include <math.h>
 
+#include <boost/container/flat_map.hpp>
+
+#include "WMKinovaApiWrapper.h"
+
+#include "WMAdmittance/WMAdmittance.h"
 
 namespace wm_kinova_hardware_interface
 {
+
+    using IndexByJointNameMapType = boost::container::flat_map<int, std::string>;
 
     class WMKinovaHardwareInterface : public hardware_interface::RobotHW {
     public:
@@ -63,7 +68,8 @@ namespace wm_kinova_hardware_interface
         // Functions
         static bool GetInfos();
         static bool SetVel(int Index, double Vel);
-        static bool InitKinova();
+        static bool InitKinova() noexcept;
+        static bool RetrieveDevices();
 
         // Variables
         int Index;
@@ -75,6 +81,7 @@ namespace wm_kinova_hardware_interface
         static double Voltage;
         static bool FreeIndex[6];
         static bool Simulation;
+        static IndexByJointNameMapType aIndexByJointNameMap;
 
         // << ---- L O W   L E V E L   I N T E R F A C E ---- >>
         // Functions
@@ -89,31 +96,16 @@ namespace wm_kinova_hardware_interface
         static double LastSentTime;
         static double LastGatherTime;
         static TrajectoryPoint pointToSend;
-        static void *commandLayer_handle;  //Handle for the library's command layer.
         static KinovaDevice devices[MAX_KINOVA_DEVICE];
 
-        // << ---- K I N O V A   D L ---- >>
-        static int (*MyInitAPI)();
-        static int (*MyCloseAPI)();
-        static int (*MySendAdvanceTrajectory)(TrajectoryPoint command);
-        static int (*MyGetDevices)(KinovaDevice devices[MAX_KINOVA_DEVICE], int &result);
-        static int (*MyMoveHome)();
-        static int (*MyInitFingers)();
-        static int (*MyGetAngularCommand)(AngularPosition &);
-        static int (*MyEraseAllTrajectories)();
-        static int (*MyGetSensorsInfo)(SensorsInfo &);
-        //static int (*MySetActuatorMaxVelocity)(float &);
-        //static int (*MyGetActuatorsPosition)(float &);
-        //static int (*MyGetAngularVelocity)(float &);
-        //static int (*MyGetAngularTorqueCommand)(float[]  );
-        static int (*MyGetAngularForce)(AngularPosition &Response);
-
+        static wm_admittance::WMAdmittance* aAdmittance;
     };
 
-    double Mod( double A, double N ) {
+    inline double Mod( double A, double N ) {
         return A-floor(A/N)*N;
     }
-    double AngleProxy( double A1 = 0, double A2 = 0 ) {  // Give the smallest difference between two angles in rad
+
+    inline double AngleProxy( double A1 = 0, double A2 = 0 ) {  // Give the smallest difference between two angles in rad
         A1 = A2-A1;
         A1 = Mod( A1+M_PI, 2*M_PI )-M_PI;
         return A1;
