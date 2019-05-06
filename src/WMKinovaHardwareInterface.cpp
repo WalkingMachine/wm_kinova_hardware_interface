@@ -19,13 +19,13 @@ double WMKinovaHardwareInterface::LastSentTime = 0;
 double WMKinovaHardwareInterface::LastGatherTime = 0;
 double WMKinovaHardwareInterface::Current = 0;
 double WMKinovaHardwareInterface::Voltage = 0;
-bool WMKinovaHardwareInterface::FreeIndex[6];
-double WMKinovaHardwareInterface::Pos[6];
-double WMKinovaHardwareInterface::Vel[6];
-double WMKinovaHardwareInterface::Eff[6];
-double WMKinovaHardwareInterface::Cmd[6];
+bool WMKinovaHardwareInterface::FreeIndex[6]{0};
+double WMKinovaHardwareInterface::Pos[6]{0};
+double WMKinovaHardwareInterface::Vel[6]{0};
+double WMKinovaHardwareInterface::Eff[6]{0};
+double WMKinovaHardwareInterface::Cmd[6]{0};
 double WMKinovaHardwareInterface::Offset[6];
-double WMKinovaHardwareInterface::Temperature[6];
+double WMKinovaHardwareInterface::Temperature[6]{0};
 hardware_interface::VelocityJointInterface WMKinovaHardwareInterface::joint_velocity_interface_;
 hardware_interface::JointStateInterface    WMKinovaHardwareInterface::joint_state_interface_;
 TrajectoryPoint WMKinovaHardwareInterface::pointToSend;
@@ -133,9 +133,10 @@ bool WMKinovaHardwareInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &
     //TemperaturePublisher = nh.advertise<diagnostic_msgs::DiagnosticArray>("diagnostics", 100);
 
     GatherInfo();
+    treadMutex.lock();
     seff = Eff[Index];
     deff = seff;
-
+    treadMutex.unlock();
     return true;
 }
 
@@ -176,7 +177,7 @@ void WMKinovaHardwareInterface::read(const ros::Time &time, const ros::Duration 
 
 void WMKinovaHardwareInterface::write(const ros::Time &time, const ros::Duration &period)
 {
-    double cmdVel{cmd};
+    double cmdVel{cmd*9.549296586}; // rad/s to RPM
     if (aAdmittance->isAdmittanceEnabled()) {
         cmdVel += aAdmittance->getAdmittanceVelocityFromJoint(aIndexByJointNameMap[Index]);
     }
@@ -203,13 +204,10 @@ bool WMKinovaHardwareInterface::GetInfos() {
 }
 
 bool WMKinovaHardwareInterface::SetVel(int Index, double cmd) {
-    double Now = ros::Time::now().toNSec();
-    bool result = true;  // true = no error
-
     treadMutex.lock();
     Cmd[Index] = cmd;
     treadMutex.unlock();
-    return result;
+    return true;
 }
 
 // << ---- L O W   L E V E L   I N T E R F A C E ---- >>
@@ -253,7 +251,7 @@ bool WMKinovaHardwareInterface::RetrieveDevices()
                 Success = true;
             } else {
                 ROS_INFO("\"* * *             B R A S   I N T R O U V A B L E                * * *\"");
-                ROS_INFO("\"* * *                 T E N T A T I V E   #%d/8                   * * *\"",
+                ROS_INFO("\"* * *                 T E N T A T I V E   #%d/3                   * * *\"",
                          nb_attempts);
                 nb_attempts++;
                 sleep(1);
@@ -294,8 +292,15 @@ bool WMKinovaHardwareInterface::GatherInfo() {
             AngularPosition PositionList;
             WMKinovaApiWrapper::MyGetAngularCommand(PositionList);
 
+            ROS_INFO("pos1: %f", PositionList.Actuators.Actuator1);
+            ROS_INFO("pos2: %f", PositionList.Actuators.Actuator2);
+            ROS_INFO("pos3: %f", PositionList.Actuators.Actuator3);
+            ROS_INFO("pos4: %f", PositionList.Actuators.Actuator4);
+            ROS_INFO("pos5: %f", PositionList.Actuators.Actuator5);
+            ROS_INFO("pos6: %f", PositionList.Actuators.Actuator6);
+
             treadMutex.lock();
-            Pos[0] = PositionList.Actuators.Actuator1 / 160 * M_PI - Offset[0];
+            Pos[0] = PositionList.Actuators.Actuator1 / 180 * M_PI - Offset[0];
             Pos[1] = PositionList.Actuators.Actuator2 / 180 * M_PI - Offset[1];
             Pos[2] = PositionList.Actuators.Actuator3 / 180 * M_PI - Offset[2];
             Pos[3] = PositionList.Actuators.Actuator4 / 180 * M_PI - Offset[3];
@@ -327,33 +332,7 @@ bool WMKinovaHardwareInterface::GatherInfo() {
             treadMutex.unlock();
 
         }
-        if (StatusMonitorOn) {
 
-            diagnostic_msgs::DiagnosticArray dia_array2;
-
-            diagnostic_msgs::DiagnosticStatus dia_status;
-            dia_status.name = "kinova_arm";
-            dia_status.hardware_id = "kinova_arm";
-
-            diagnostic_msgs::KeyValue KV1;
-            KV1.key = "current";
-            char chare[50];
-            std::sprintf(chare, "%lf", Current);
-            KV1.value = chare;
-
-            diagnostic_msgs::KeyValue KV2;
-            KV2.key = "voltage";
-            std::sprintf(chare, "%lf", Voltage);
-            KV2.value = chare;
-
-            dia_status.values.push_back(KV1);
-            dia_status.values.push_back(KV2);
-
-            dia_array2.status.push_back(dia_status);
-
-            //StatusPublisher.publish(dia_array2);
-
-        }
     }
     return true;  // TODO  detect errors
 }
@@ -361,14 +340,17 @@ bool WMKinovaHardwareInterface::GatherInfo() {
 bool WMKinovaHardwareInterface::SendPoint() {
 
     if (KinovaReady) {
-        for (int i = 0; i < 6; i++)
-        {
+        for (int i = 0; i < 6; i++) {
+            treadMutex.lock();
             Vel[i] = Cmd[i];
+            treadMutex.unlock();
         }
         if (Simulation) {
             // Do crude simulation
             for (int i = 0; i < 6; i++) {
+                treadMutex.lock();
                 Temperature[i] = 0;
+                treadMutex.unlock();
             }
         } else {
             //  execute order
@@ -394,9 +376,12 @@ bool WMKinovaHardwareInterface::SendPoint() {
 
 void *WMKinovaHardwareInterface::run() {
     ros::Rate rate(80);
+    int i{0};
     while (ros::ok()){
-        GatherInfo();
-        SendPoint();
+        if (!(bool)(i++ % 4))
+            GatherInfo();
+        else
+            SendPoint();
         rate.sleep();
     }
     std::cout << "The kinova thread died.\n";
