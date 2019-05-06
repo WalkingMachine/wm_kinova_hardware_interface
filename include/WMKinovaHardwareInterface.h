@@ -26,6 +26,9 @@
 
 #include "WMAdmittance/WMAdmittance.h"
 
+#include <thread>
+#include <mutex>
+
 namespace wm_kinova_hardware_interface
 {
 
@@ -35,6 +38,7 @@ namespace wm_kinova_hardware_interface
     public:
         // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
         // Functions
+        WMKinovaHardwareInterface();
         virtual bool init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_hw_nh);
         virtual void read(const ros::Time &time, const ros::Duration &period);
         virtual void write(const ros::Time &time, const ros::Duration &period);
@@ -62,6 +66,10 @@ namespace wm_kinova_hardware_interface
         static double Eff[6];
         static double Temperature[6];
         static double Offset[6];
+
+        static std::thread tread;
+        static void *run();
+        static std::mutex treadMutex;
 
     private:
         // << ---- M E D I U M   L E V E L   I N T E R F A C E ---- >>

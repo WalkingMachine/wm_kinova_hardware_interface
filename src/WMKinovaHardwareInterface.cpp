@@ -11,10 +11,6 @@
 using namespace wm_kinova_hardware_interface;
 using namespace wm_admittance;
 
-namespace
-{
-    const uint PERIOD = 6000000;
-}
 
 // << ---- S T A T I C   V A R I A B L E   I N I T I A L I Z A T I O N ---- >>
 bool WMKinovaHardwareInterface::KinovaReady = false;
@@ -44,6 +40,15 @@ bool WMKinovaHardwareInterface::Simulation = false;
 IndexByJointNameMapType WMKinovaHardwareInterface::aIndexByJointNameMap;
 
 // << ---- H I G H   L E V E L   I N T E R F A C E ---- >>
+
+WMKinovaHardwareInterface::WMKinovaHardwareInterface(){
+
+}
+
+std::thread WMKinovaHardwareInterface::tread(&WMKinovaHardwareInterface::run);
+std::mutex WMKinovaHardwareInterface::treadMutex;
+
+
 
 bool WMKinovaHardwareInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_hw_nh)
 {
@@ -140,8 +145,11 @@ void WMKinovaHardwareInterface::read(const ros::Time &time, const ros::Duration 
     //std::cout << "\nIndex = " << Index << ", Position = " << Pos[Index] << ", Effort = " << Eff[Index];
     diagnostic_msgs::DiagnosticArray dia_array;
 
+    treadMutex.lock();
     pos = AngleProxy( 0, Pos[Index]);
     eff = Eff[Index];
+    vel = Vel[Index];
+    treadMutex.unlock();
 
 //    diagnostic_msgs::DiagnosticStatus dia_status;
 //    dia_status.name = "kinova_arm";
@@ -168,12 +176,11 @@ void WMKinovaHardwareInterface::read(const ros::Time &time, const ros::Duration 
 
 void WMKinovaHardwareInterface::write(const ros::Time &time, const ros::Duration &period)
 {
-    double cmdVel;
+    double cmdVel{cmd};
     if (aAdmittance->isAdmittanceEnabled()) {
-        cmdVel = aAdmittance->getAdmittanceVelocityFromJoint(aIndexByJointNameMap[Index]) + cmd * 57.295779513;
+        cmdVel += aAdmittance->getAdmittanceVelocityFromJoint(aIndexByJointNameMap[Index]);
     }
     else {
-        cmdVel = cmd * 57.295779513;
         seff += (eff-seff)*ComplienceLossFactor;
         deff += (seff-deff)*ComplienceDerivationFactor;
 
@@ -185,49 +192,23 @@ void WMKinovaHardwareInterface::write(const ros::Time &time, const ros::Duration
         }
     }
 
-    //if (!aAdmittance->isAdmittanceEnabled())
-    //{
-    //    seff += (eff-seff)*ComplienceLossFactor;
-//
-    //    deff += (seff-deff)*ComplienceDerivationFactor;
-//
-    //    if ((seff-deff)*(seff-deff)>ComplienceThreshold){
-    //        cmdVel += (-2*seff+deff)*ComplienceLevel;
-    //    } else {
-    //        deff += (seff-deff)*ComplienceResistance;
-    //    }
-    //}
-
     SetVel(Index, cmdVel*SpeedRatio); // from r/s to ded/p
 
 }
 
 // << ---- M E D I U M   L E V E L   I N T E R F A C E ---- >>
 bool WMKinovaHardwareInterface::GetInfos() {
-    double Now = ros::Time::now().toNSec();
-    bool result;  // true = no error
-    if (LastGatherTime < Now - PERIOD) {
-        LastGatherTime = Now;
-        result = GatherInfo();
-        if (!result) {
-            ROS_ERROR("Kinova Hardware Interface.  error detected while trying to gather information");
-            return false;
-        }
-    }
+
     return true;
 }
 
 bool WMKinovaHardwareInterface::SetVel(int Index, double cmd) {
     double Now = ros::Time::now().toNSec();
     bool result = true;  // true = no error
+
+    treadMutex.lock();
     Cmd[Index] = cmd;
-    if (LastSentTime < Now - PERIOD) {
-        LastSentTime = Now;
-        result = SendPoint();
-        if (!result) {
-            ROS_ERROR("Kinova Hardware Interface.  error detected while trying to send point");
-        }
-    }
+    treadMutex.unlock();
     return result;
 }
 
@@ -312,32 +293,38 @@ bool WMKinovaHardwareInterface::GatherInfo() {
         } else {
             AngularPosition PositionList;
             WMKinovaApiWrapper::MyGetAngularCommand(PositionList);
+
+            treadMutex.lock();
             Pos[0] = PositionList.Actuators.Actuator1 / 160 * M_PI - Offset[0];
             Pos[1] = PositionList.Actuators.Actuator2 / 180 * M_PI - Offset[1];
             Pos[2] = PositionList.Actuators.Actuator3 / 180 * M_PI - Offset[2];
             Pos[3] = PositionList.Actuators.Actuator4 / 180 * M_PI - Offset[3];
             Pos[4] = PositionList.Actuators.Actuator5 / 180 * M_PI - Offset[4];
             Pos[5] = PositionList.Actuators.Actuator6 / 180 * M_PI - Offset[5];
-
-            SensorsInfo SI;
-            WMKinovaApiWrapper::MyGetSensorsInfo(SI);
-            Temperature[0] = SI.ActuatorTemp1;
-            Temperature[1] = SI.ActuatorTemp2;
-            Temperature[2] = SI.ActuatorTemp3;
-            Temperature[3] = SI.ActuatorTemp4;
-            Temperature[4] = SI.ActuatorTemp5;
-            Temperature[5] = SI.ActuatorTemp6;
-            Current = SI.Current;
-            Voltage = SI.Voltage;
+            treadMutex.unlock();
+//
+//            SensorsInfo SI;
+//            WMKinovaApiWrapper::MyGetSensorsInfo(SI);
+//            Temperature[0] = SI.ActuatorTemp1;
+//            Temperature[1] = SI.ActuatorTemp2;
+//            Temperature[2] = SI.ActuatorTemp3;
+//            Temperature[3] = SI.ActuatorTemp4;
+//            Temperature[4] = SI.ActuatorTemp5;
+//            Temperature[5] = SI.ActuatorTemp6;
+//            Current = SI.Current;
+//            Voltage = SI.Voltage;
 
             AngularPosition ForceList;
             WMKinovaApiWrapper::MyGetAngularForce(ForceList);
+
+            treadMutex.lock();
             Eff[0] = ForceList.Actuators.Actuator1;
             Eff[1] = ForceList.Actuators.Actuator2;
             Eff[2] = ForceList.Actuators.Actuator3;
             Eff[3] = ForceList.Actuators.Actuator4;
             Eff[4] = ForceList.Actuators.Actuator5;
             Eff[5] = ForceList.Actuators.Actuator6;
+            treadMutex.unlock();
 
         }
         if (StatusMonitorOn) {
@@ -385,12 +372,15 @@ bool WMKinovaHardwareInterface::SendPoint() {
             }
         } else {
             //  execute order
+
+            treadMutex.lock();
             pointToSend.Position.Actuators.Actuator1 = (float) Cmd[0];
             pointToSend.Position.Actuators.Actuator2 = (float) Cmd[1];
             pointToSend.Position.Actuators.Actuator3 = (float) Cmd[2];
             pointToSend.Position.Actuators.Actuator4 = (float) Cmd[3];
             pointToSend.Position.Actuators.Actuator5 = (float) Cmd[4];
             pointToSend.Position.Actuators.Actuator6 = (float) Cmd[5];
+            treadMutex.unlock();
 
             WMKinovaApiWrapper::MyEraseAllTrajectories();
             //ROS_INFO( "Send!" );
@@ -401,4 +391,16 @@ bool WMKinovaHardwareInterface::SendPoint() {
     }
     return true;  // TODO  detect errors
 }
+
+void *WMKinovaHardwareInterface::run() {
+    ros::Rate rate(80);
+    while (ros::ok()){
+        GatherInfo();
+        SendPoint();
+        rate.sleep();
+    }
+    std::cout << "The kinova thread died.\n";
+}
+
+
 PLUGINLIB_EXPORT_CLASS( wm_kinova_hardware_interface::WMKinovaHardwareInterface, hardware_interface::RobotHW)
