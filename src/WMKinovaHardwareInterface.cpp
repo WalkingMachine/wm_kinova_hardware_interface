@@ -292,12 +292,12 @@ bool WMKinovaHardwareInterface::GatherInfo() {
             AngularPosition PositionList;
             WMKinovaApiWrapper::MyGetAngularCommand(PositionList);
 
-            ROS_INFO("pos1: %f", PositionList.Actuators.Actuator1);
-            ROS_INFO("pos2: %f", PositionList.Actuators.Actuator2);
-            ROS_INFO("pos3: %f", PositionList.Actuators.Actuator3);
-            ROS_INFO("pos4: %f", PositionList.Actuators.Actuator4);
-            ROS_INFO("pos5: %f", PositionList.Actuators.Actuator5);
-            ROS_INFO("pos6: %f", PositionList.Actuators.Actuator6);
+//            ROS_INFO("pos1: %f", PositionList.Actuators.Actuator1);
+//            ROS_INFO("pos2: %f", PositionList.Actuators.Actuator2);
+//            ROS_INFO("pos3: %f", PositionList.Actuators.Actuator3);
+//            ROS_INFO("pos4: %f", PositionList.Actuators.Actuator4);
+//            ROS_INFO("pos5: %f", PositionList.Actuators.Actuator5);
+//            ROS_INFO("pos6: %f", PositionList.Actuators.Actuator6);
 
             treadMutex.lock();
             Pos[0] = PositionList.Actuators.Actuator1 / 180 * M_PI - Offset[0];
@@ -341,6 +341,11 @@ bool WMKinovaHardwareInterface::SendPoint() {
 
     if (KinovaReady) {
         for (int i = 0; i < 6; i++) {
+
+            // Apply hardcoded speed limits
+            Cmd[i] = Cmd[i] < 40 ? Cmd[i] : 40;
+            Cmd[i] = Cmd[i] > -40 ? Cmd[i] : -40;
+
             treadMutex.lock();
             Vel[i] = Cmd[i];
             treadMutex.unlock();
