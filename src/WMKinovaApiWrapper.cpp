@@ -54,7 +54,9 @@ void WMKinovaApiWrapper::initialize()
             MyInitFingers = (int (*)()) dlsym(kinovaHandle, "InitFingers");
             MyGetDevices = (int (*)(KinovaDevice devices[MAX_KINOVA_DEVICE], int &result)) dlsym(kinovaHandle,
                                                                                                  "GetDevices");
-            MySendAdvanceTrajectory = (int (*)(TrajectoryPoint)) dlsym(kinovaHandle, "SendAdvanceTrajectory");
+
+	        MySendAdvanceTrajectory = (int (*)(TrajectoryPoint)) dlsym(kinovaHandle,"SendBasicTrajectory");
+           // MySendAdvanceTrajectory = (int (*)(TrajectoryPoint)) dlsym(kinovaHandle, "SendAdvanceTrajectory");
             MyGetAngularCommand = (int (*)(AngularPosition &)) dlsym(kinovaHandle, "GetAngularPosition");
             MyGetAngularForce = (int (*)(AngularPosition &)) dlsym(kinovaHandle, "GetAngularForce");
 
