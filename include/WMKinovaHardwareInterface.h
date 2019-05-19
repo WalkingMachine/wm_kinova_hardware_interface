@@ -94,6 +94,12 @@ namespace wm_kinova_hardware_interface
         // << ---- L O W   L E V E L   I N T E R F A C E ---- >>
         // Functions
         static bool SendPoint();
+        static void *SendToKinova();
+        static bool stillSending;
+        static void *GetTorqueFromKinova();
+        static bool stillGettingTorque;
+        static void *GetpositionFromKinova();
+        static bool stillGettingPosition;
         static bool GatherInfo();
 
         // Variables
@@ -104,6 +110,9 @@ namespace wm_kinova_hardware_interface
         static double LastSentTime;
         static double LastGatherTime;
         static TrajectoryPoint pointToSend;
+        static AngularPosition ForceList;
+        static AngularPosition PositionList;
+
         static KinovaDevice devices[MAX_KINOVA_DEVICE];
 
         static wm_admittance::WMAdmittance* aAdmittance;

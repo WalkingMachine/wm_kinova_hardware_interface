@@ -29,6 +29,8 @@ double WMKinovaHardwareInterface::Temperature[6]{0};
 hardware_interface::VelocityJointInterface WMKinovaHardwareInterface::joint_velocity_interface_;
 hardware_interface::JointStateInterface    WMKinovaHardwareInterface::joint_state_interface_;
 TrajectoryPoint WMKinovaHardwareInterface::pointToSend;
+AngularPosition WMKinovaHardwareInterface::ForceList;
+AngularPosition WMKinovaHardwareInterface::PositionList;
 ros::Publisher WMKinovaHardwareInterface::StatusPublisher;
 KinovaDevice WMKinovaHardwareInterface::devices[MAX_KINOVA_DEVICE];
 
@@ -47,7 +49,9 @@ WMKinovaHardwareInterface::WMKinovaHardwareInterface(){
 
 std::thread WMKinovaHardwareInterface::tread(&WMKinovaHardwareInterface::run);
 std::mutex WMKinovaHardwareInterface::treadMutex;
-
+bool WMKinovaHardwareInterface::stillSending{false};
+bool WMKinovaHardwareInterface::stillGettingPosition{false};
+bool WMKinovaHardwareInterface::stillGettingTorque{false};
 
 
 bool WMKinovaHardwareInterface::init(ros::NodeHandle &root_nh, ros::NodeHandle &robot_hw_nh)
@@ -276,6 +280,33 @@ bool WMKinovaHardwareInterface::StartStatusMonitoring(int argc, char **argv) {
     return true;
 }
 
+void *WMKinovaHardwareInterface::SendToKinova(){
+    try {
+        WMKinovaApiWrapper::MySendAdvanceTrajectory(pointToSend);
+    } catch(...) {
+        ROS_ERROR("Unable to send command to kinova arm");
+    }
+    stillSending = false;
+}
+
+void *WMKinovaHardwareInterface::GetTorqueFromKinova(){
+    try {
+        WMKinovaApiWrapper::MyGetAngularForce(ForceList);
+    } catch(...) {
+        ROS_ERROR("Unable to get torque from kinova arm");
+    }
+    stillGettingTorque = false;
+}
+
+void *WMKinovaHardwareInterface::GetpositionFromKinova(){
+    try {
+        WMKinovaApiWrapper::MyGetAngularCommand(PositionList);
+    } catch(...) {
+        ROS_ERROR("Unable to get position from kinova arm");
+    }
+    stillGettingPosition = false;
+}
+
 bool WMKinovaHardwareInterface::GatherInfo() {
 
     if (KinovaReady) {
@@ -289,28 +320,44 @@ bool WMKinovaHardwareInterface::GatherInfo() {
             Current = -1;
             Voltage = -1;
         } else {
-            AngularPosition PositionList;
 
-            assert(( WMKinovaApiWrapper::MyGetAngularCommand(PositionList) == 1 ));
+            if (stillGettingPosition){
+                ROS_ERROR("Getting position from kinova took too long.");
+            } else {
 
-            AngularPosition ForceList;
-            assert(( WMKinovaApiWrapper::MyGetAngularForce(ForceList) == 1));
+                treadMutex.lock();
+                Pos[0] = PositionList.Actuators.Actuator1 / 180 * M_PI - Offset[0];
+                Pos[1] = PositionList.Actuators.Actuator2 / 180 * M_PI - Offset[1];
+                Pos[2] = PositionList.Actuators.Actuator3 / 180 * M_PI - Offset[2];
+                Pos[3] = PositionList.Actuators.Actuator4 / 180 * M_PI - Offset[3];
+                Pos[4] = PositionList.Actuators.Actuator5 / 180 * M_PI - Offset[4];
+                Pos[5] = PositionList.Actuators.Actuator6 / 180 * M_PI - Offset[5];
+                treadMutex.unlock();
 
-            treadMutex.lock();
-            Pos[0] = PositionList.Actuators.Actuator1 / 180 * M_PI - Offset[0];
-            Pos[1] = PositionList.Actuators.Actuator2 / 180 * M_PI - Offset[1];
-            Pos[2] = PositionList.Actuators.Actuator3 / 180 * M_PI - Offset[2];
-            Pos[3] = PositionList.Actuators.Actuator4 / 180 * M_PI - Offset[3];
-            Pos[4] = PositionList.Actuators.Actuator5 / 180 * M_PI - Offset[4];
-            Pos[5] = PositionList.Actuators.Actuator6 / 180 * M_PI - Offset[5];
+                stillGettingPosition = true;
+                std::thread getterPos(&WMKinovaHardwareInterface::GetpositionFromKinova);
+                getterPos.detach();
 
-            Eff[0] = ForceList.Actuators.Actuator1;
-            Eff[1] = ForceList.Actuators.Actuator2;
-            Eff[2] = ForceList.Actuators.Actuator3;
-            Eff[3] = ForceList.Actuators.Actuator4;
-            Eff[4] = ForceList.Actuators.Actuator5;
-            Eff[5] = ForceList.Actuators.Actuator6;
-            treadMutex.unlock();
+            }
+
+            if (stillGettingTorque){
+                ROS_ERROR("Getting torque from kinova took too long.");
+            } else {
+
+                treadMutex.lock();
+                Eff[0] = ForceList.Actuators.Actuator1;
+                Eff[1] = ForceList.Actuators.Actuator2;
+                Eff[2] = ForceList.Actuators.Actuator3;
+                Eff[3] = ForceList.Actuators.Actuator4;
+                Eff[4] = ForceList.Actuators.Actuator5;
+                Eff[5] = ForceList.Actuators.Actuator6;
+                treadMutex.unlock();
+
+                stillGettingTorque = true;
+                std::thread getterPos(&WMKinovaHardwareInterface::GetTorqueFromKinova);
+                getterPos.detach();
+
+            }
 
 
 //
@@ -350,18 +397,26 @@ bool WMKinovaHardwareInterface::SendPoint() {
             }
             treadMutex.unlock();
         } else {
-            //  execute order
-            treadMutex.lock();
-            pointToSend.Position.Actuators.Actuator1 = (float) Cmd[0];
-            pointToSend.Position.Actuators.Actuator2 = (float) Cmd[1];
-            pointToSend.Position.Actuators.Actuator3 = (float) Cmd[2];
-            pointToSend.Position.Actuators.Actuator4 = (float) Cmd[3];
-            pointToSend.Position.Actuators.Actuator5 = (float) Cmd[4];
-            pointToSend.Position.Actuators.Actuator6 = (float) Cmd[5];
-            treadMutex.unlock();
 
+            if (stillSending){
+                ROS_ERROR("Sending to kinova took too long.");
+            } else {
+                //  execute order
+                treadMutex.lock();
+                pointToSend.Position.Actuators.Actuator1 = (float) Cmd[0];
+                pointToSend.Position.Actuators.Actuator2 = (float) Cmd[1];
+                pointToSend.Position.Actuators.Actuator3 = (float) Cmd[2];
+                pointToSend.Position.Actuators.Actuator4 = (float) Cmd[3];
+                pointToSend.Position.Actuators.Actuator5 = (float) Cmd[4];
+                pointToSend.Position.Actuators.Actuator6 = (float) Cmd[5];
+                treadMutex.unlock();
 
-            assert(( WMKinovaApiWrapper::MySendAdvanceTrajectory(pointToSend) == 1 ));
+                stillSending = true;
+                std::thread sender(&WMKinovaHardwareInterface::SendToKinova);
+                sender.detach();
+
+            }
+//            WMKinovaApiWrapper::MySendAdvanceTrajectory(pointToSend);
 
         }
     }
