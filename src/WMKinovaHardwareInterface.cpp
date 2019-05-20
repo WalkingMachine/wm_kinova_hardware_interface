@@ -284,7 +284,7 @@ void *WMKinovaHardwareInterface::SendToKinova(){
     try {
         WMKinovaApiWrapper::MySendAdvanceTrajectory(pointToSend);
     } catch(...) {
-        ROS_ERROR("Unable to send command to kinova arm");
+        ROS_WARN("Unable to send command to kinova arm");
     }
     stillSending = false;
 }
@@ -293,7 +293,7 @@ void *WMKinovaHardwareInterface::GetTorqueFromKinova(){
     try {
         WMKinovaApiWrapper::MyGetAngularForce(ForceList);
     } catch(...) {
-        ROS_ERROR("Unable to get torque from kinova arm");
+        ROS_WARN("Unable to get torque from kinova arm");
     }
     stillGettingTorque = false;
 }
@@ -302,7 +302,7 @@ void *WMKinovaHardwareInterface::GetpositionFromKinova(){
     try {
         WMKinovaApiWrapper::MyGetAngularCommand(PositionList);
     } catch(...) {
-        ROS_ERROR("Unable to get position from kinova arm");
+        ROS_WARN("Unable to get position from kinova arm");
     }
     stillGettingPosition = false;
 }
@@ -322,7 +322,7 @@ bool WMKinovaHardwareInterface::GatherInfo() {
         } else {
 
             if (stillGettingPosition){
-                ROS_ERROR("Getting position from kinova took too long.");
+                ROS_WARN("Getting position from kinova took too long.");
             } else {
 
                 treadMutex.lock();
@@ -341,7 +341,7 @@ bool WMKinovaHardwareInterface::GatherInfo() {
             }
 
             if (stillGettingTorque){
-                ROS_ERROR("Getting torque from kinova took too long.");
+                ROS_WARN("Getting torque from kinova took too long.");
             } else {
 
                 treadMutex.lock();
@@ -399,7 +399,7 @@ bool WMKinovaHardwareInterface::SendPoint() {
         } else {
 
             if (stillSending){
-                ROS_ERROR("Sending to kinova took too long.");
+                ROS_WARN("Sending to kinova took too long.");
             } else {
                 //  execute order
                 treadMutex.lock();
