@@ -398,9 +398,7 @@ bool WMKinovaHardwareInterface::SendPoint() {
             treadMutex.unlock();
         } else {
 
-            if (stillSending){
-                ROS_WARN("Sending to kinova took too long.");
-            } else {
+            if (!stillSending){
                 //  execute order
                 treadMutex.lock();
                 pointToSend.Position.Actuators.Actuator1 = (float) Cmd[0];
