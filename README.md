@@ -1,27 +1,32 @@
 # wm_kinova_hardware_interface
 
-Package pour le hardware interface des moteurs kinova de sara.
+This Package is a plugin for combined hardware interface.
+It provide a Hardware interface 
 Ce package agit comme un plugin pour sara_control. Par conséquent, aucun launch direct n'est néssésaire.
-Pour tester ce package:
+
+### Installation
 ```sh
-git clone https://github.com/WalkingMachine/sara_launch.git
-git clone https://github.com/WalkingMachine/sara_control.git
-git clone https://github.com/WalkingMachine/sara_description.git
-git clone https://github.com/WalkingMachine/robotiq_c2_description.git
-```
-Install
-```sh
-cd <ce package>
+cd <this package>
 sudo ./install.sh
 apt-get install ros-kinetic-ros-control
 catkin_make
 ```
-Launch
-```sh
-roslaunch sara_description sara_description
-roslaunch sara_control sara_control
-roslaunch sara_launch sara_control
-```
 
-les controleur sara_arm_trajectory_controller et sara_arm_velocity_controller devrais alors être disponnible pour ere loader avec la commande $rosservice call /controller_manager/load_controller "name: '<le_nom_du_controlleur>'"
-  
+### Config file example
+```yaml
+robot_hardware:
+  - MyKinovaJoint1
+
+MyKinovaJoint1:
+  type: wm_kinova_hardware_interface/WMKinovaHardwareInterface
+  index: 0
+  offset: -3.14159
+  speed_ratio: 1
+  complience_level: 2 # Set to 0 for maximum stifness.
+  complience_threshold: 12
+  complience_derivation_factor: 0.03
+  complience_loss_factor: 0.75
+  complience_resistance: 0.2
+  joints:
+    - kinova_joint_1
+```
