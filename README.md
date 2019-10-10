@@ -19,7 +19,7 @@ robot_hardware:
 
 MyKinovaJoint1:
   type: wm_kinova_hardware_interface/WMKinovaHardwareInterface
-  index: 0
+  index: 0  # The address of the actuator.
   offset: -3.14159
   speed_ratio: 1
   complience_level: 2 # Set to 0 for maximum stifness.
