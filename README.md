@@ -1,8 +1,7 @@
 # wm_kinova_hardware_interface
 
 This Package is a plugin for combined hardware interface.
-It provide a Hardware interface 
-Ce package agit comme un plugin pour sara_control. Par conséquent, aucun launch direct n'est néssésaire.
+It provide a Hardware interface as a plugin so no launchfile is needed.
 
 ### Installation
 ```sh
