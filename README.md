@@ -8,7 +8,6 @@ It provide a Hardware interface as a plugin so no launchfile is needed.
 cd <this package>
 sudo ./install.sh
 apt-get install ros-kinetic-ros-control
-catkin_make
 ```
 
 ### Config file example
